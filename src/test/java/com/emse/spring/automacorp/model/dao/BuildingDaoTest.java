@@ -20,7 +20,7 @@ class BuildingDaoTest {
 
     @Test
     public void shouldFindASensorById() {
-        BuildingEntity building = buildingDao.getReferenceById(-10L); // (3)
+        BuildingEntity building = buildingDao.getReferenceById(-10L);
         Assertions.assertThat(building.getName()).isEqualTo("Mines");
         Assertions.assertThat(building.getOutsideTemperature().getId()).isEqualTo(-8);
         List<RoomEntity> rooms = Arrays.asList(roomDao.getReferenceById(-10L), roomDao.getReferenceById(-9L));

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "SP_HEATER")
 public class HeaterEntity {
-
     @Id
     @GeneratedValue
     private Long id;

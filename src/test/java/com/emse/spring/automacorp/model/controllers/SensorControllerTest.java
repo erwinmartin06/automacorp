@@ -25,20 +25,16 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 @WebMvcTest(SensorController.class)
 class SensorControllerTest {
-    // Spring object to mock call to our app
     @Autowired
     private MockMvc mockMvc;
 
-    // The serializer used by Spring to send and receive data to/from the REST controller
     @Autowired
     private ObjectMapper objectMapper;
 
-    // We choose to mock the DAO used in the REST controller to limit the scope of our test
     @MockBean
     private SensorDao1 sensorDao;
 
     SensorEntity createSensorEntity(Long id, String name) {
-        // Sensor is recreated before each test
         SensorEntity sensorEntity = new SensorEntity(SensorType.TEMPERATURE, name);
         sensorEntity.setId(id);
         sensorEntity.setValue(24.2);

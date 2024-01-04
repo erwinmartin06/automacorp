@@ -31,7 +31,7 @@ public class SpringSecurityConfigTest {
         mockMvc.perform(get("/api/buildings"))
                 .andExpect(status().isOk());
         mockMvc.perform(get("/console/"))
-                .andExpect(status().isNotFound()); //If this is not forbidden, then the ADMIN can access the console
+                .andExpect(status().isNotFound()); //If this is not forbidden, then the ADMIN can access the console.
     }
 
 }

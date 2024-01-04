@@ -25,7 +25,6 @@ public class SpringSecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        // We create a password encoder
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
         manager.createUser(
@@ -49,6 +48,7 @@ public class SpringSecurityConfig {
 
     @Bean
     @Order(1)
+    //We allow the User to Access anything except the console and the api/admin paths. The Admin can access everything.
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests

@@ -2,27 +2,27 @@ package com.emse.spring.automacorp.model.entities;
 import com.emse.spring.automacorp.model.SensorType;
 import jakarta.persistence.*;
 
-@Entity // (1).
-@Table(name = "SP_SENSOR") // (2).
+@Entity
+@Table(name = "SP_SENSOR")
 public class SensorEntity {
-    @Id // (3).
+    @Id
     @GeneratedValue
     private Long id;
 
-    @Column(nullable=false, length=255)  // (4).
+    @Column(nullable=false, length=255)
     private String name;
 
-    @Column(name = "sensor_value") // (5)
+    @Column(name = "sensor_value")
     private Double value;
 
-    @Column(name = "sensor_type") // (5).
-    @Enumerated(EnumType.STRING) // (6).
+    @Column(name = "sensor_type")
+    @Enumerated(EnumType.STRING)
     private SensorType sensorType;
 
-    public SensorEntity() { // (8).
+    public SensorEntity() {
     }
 
-    public SensorEntity(SensorType sensorType, String name) { // (9).
+    public SensorEntity(SensorType sensorType, String name) {
         this.name = name;
         this.sensorType = sensorType;
     }

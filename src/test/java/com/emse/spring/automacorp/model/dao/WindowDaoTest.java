@@ -11,14 +11,14 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@DataJpaTest // (1)
+@DataJpaTest
 class WindowDaoTest {
-    @Autowired // (2)
+    @Autowired
     private WindowDao windowDao;
 
     @Test
     public void shouldFindAWindowById() {
-        WindowEntity window = windowDao.getReferenceById(-10L); // (3)
+        WindowEntity window = windowDao.getReferenceById(-10L);
         Assertions.assertThat(window.getName()).isEqualTo("Window 1");
         Assertions.assertThat(window.getWindowStatus().getValue()).isEqualTo(1.0);
     }
