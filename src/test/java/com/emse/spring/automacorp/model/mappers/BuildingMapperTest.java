@@ -5,7 +5,6 @@ import com.emse.spring.automacorp.model.WindowStatus;
 import com.emse.spring.automacorp.model.entities.*;
 import com.emse.spring.automacorp.model.records.Building;
 import com.emse.spring.automacorp.model.records.Room;
-import com.emse.spring.automacorp.model.records.Sensor;
 import com.emse.spring.automacorp.model.records.Window;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -52,7 +51,7 @@ class BuildingMapperTest {
         Building expectedBuilding = new Building(
                 4L,
                 "Building Test",
-                new Sensor(1L, "Outside Temperature", 20.0, SensorType.TEMPERATURE),
+                20.0,
                 List.of(new Room(
                         3L,
                         "Room Test",

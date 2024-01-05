@@ -10,7 +10,7 @@ public class BuildingMapper {
         return new Building(
                 building.getId(),
                 building.getName(),
-                SensorMapper.of(building.getOutsideTemperature()),
+                building.getOutsideTemperature().getValue(),
                 building.getRooms().stream().map(RoomMapper::of).collect(Collectors.toList())
         );
     }

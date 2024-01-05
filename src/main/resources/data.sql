@@ -4,8 +4,9 @@ INSERT INTO SP_SENSOR(id, name, sensor_value, sensor_type) VALUES(-8, 'Window 2 
 INSERT INTO SP_SENSOR(id, name, sensor_value, sensor_type) VALUES(-7, 'Window 1 status room 2', 0.0, 'STATUS');
 INSERT INTO SP_SENSOR(id, name, sensor_value, sensor_type) VALUES(-6, 'Window 2 status room 2', 0.0, 'STATUS');
 INSERT INTO SP_SENSOR(id, name, sensor_value, sensor_type) VALUES(-5, 'Temperature room 2', 20.6, 'TEMPERATURE');
+INSERT INTO SP_SENSOR(id, name, sensor_value, sensor_type) VALUES(-5, 'Outside Temperature', 8.0, 'TEMPERATURE');
 
-INSERT INTO SP_BUILDING(id, name, outside_temperature_id) VALUES(-10, 'Mines', -8);
+INSERT INTO SP_BUILDING(id, name, outside_temperature_id) VALUES(-10, 'Mines', -5);
 
 INSERT INTO SP_ROOM(id, name, floor, current_temp_id, building_id) VALUES(-10, 'Room1', 1, -10, -10);
 INSERT INTO SP_ROOM(id, name, floor, current_temp_id, target_temp, building_id) VALUES(-9, 'Room2', 1, -5, 20.0, -10);
