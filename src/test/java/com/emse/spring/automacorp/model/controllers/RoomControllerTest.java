@@ -126,7 +126,7 @@ class RoomControllerTest {
     void shouldCreateOrUpdateRoom() throws Exception {
         SensorEntity sensor = createSensorEntity(1L, "Sensor 1");
         RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of(), null);
-        RoomCommand expectedRoom = new RoomCommand(room.getName(), sensor.getId(), room.getFloor());
+        RoomCommand expectedRoom = new RoomCommand(room.getName(), sensor.getId(), room.getTargetTemp(), room.getFloor());
 
         String json = objectMapper.writeValueAsString(expectedRoom);
 
@@ -143,7 +143,8 @@ class RoomControllerTest {
                 // check the HTTP response
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Room 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.targetTemp").value("21.0"));
     }
 
     @Test

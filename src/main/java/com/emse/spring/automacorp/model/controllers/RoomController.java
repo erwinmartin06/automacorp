@@ -52,6 +52,7 @@ public class RoomController {
     @PostMapping
     public ResponseEntity<Room> createOrUpdate(@RequestBody RoomCommand command) {
         RoomEntity roomEntity = new RoomEntity(command.name(), sensorDao1.findById(command.currentTempId()).orElse(null), command.floor());
+        roomEntity.setTargetTemp(command.targetTemp());
         RoomEntity saved = roomDao.save(roomEntity);
         return ResponseEntity.ok(RoomMapper.of(saved));
     }
