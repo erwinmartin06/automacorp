@@ -13,7 +13,7 @@ public class BuildingEntity {
     @Column(nullable = false, length = 255)
     private String name;
 
-    @OneToOne
+    @ManyToOne(optional = false)
     private SensorEntity outsideTemperature;
 
     @OneToMany(mappedBy = "building")

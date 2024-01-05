@@ -28,10 +28,10 @@ public class SpringSecurityConfig {
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
         manager.createUser(
-                User.withUsername("user").password(encoder.encode("myPassword")).roles(ROLE_USER).build()
+                User.withUsername("user").password(encoder.encode("theSecurePassword")).roles(ROLE_USER).build()
         );
         manager.createUser(
-                User.withUsername("Erwin").password(encoder.encode("myPassword")).roles(ROLE_ADMIN).build()
+                User.withUsername("Erwin").password(encoder.encode("theSecurePassword")).roles(ROLE_ADMIN).build()
         );
         return manager;
     }
