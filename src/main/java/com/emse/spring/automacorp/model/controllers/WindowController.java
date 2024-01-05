@@ -8,8 +8,10 @@ import com.emse.spring.automacorp.model.mappers.WindowMapper;
 import com.emse.spring.automacorp.model.records.Window;
 import com.emse.spring.automacorp.model.records.WindowCommand;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -61,6 +63,20 @@ public class WindowController {
         entity.setRoom(roomDao.findById(window.roomId()).orElse(null));
         entity.setWindowStatus(sensorDao1.findById(window.sensorId()).orElse(null));
 
+        return ResponseEntity.ok(WindowMapper.of(entity));
+    }
+
+    @PutMapping(path = "/{id}/switch")
+    public ResponseEntity<Window> switchWindowStatusById(@PathVariable Long id) {
+        WindowEntity entity = windowDao.findById(id).orElse(null);
+        if(entity != null && entity.getWindowStatus() != null){
+            entity.getWindowStatus().setValue(entity.getWindowStatus().getValue() == 1.0 ? 0.0 : 1.0);
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Window not found");
+        }
+
+        windowDao.save(entity);
         return ResponseEntity.ok(WindowMapper.of(entity));
     }
 

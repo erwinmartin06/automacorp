@@ -5,6 +5,7 @@ import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.*;
 import com.emse.spring.automacorp.model.records.HeaterCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -188,5 +189,22 @@ class HeaterControllerTest {
     void shouldDelete() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/heaters/999").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "Erwin", roles = "ADMIN")
+    void shouldSwitchHeaterStatusById() throws Exception {
+        SensorEntity sensor1 = createSensorEntity();
+        sensor1.setValue(0.0);
+        RoomEntity room1 = createRoomEntity(1L, "Room 1", sensor1, 3, 21.0, List.of(), List.of(), null);
+        HeaterEntity heater = createHeaterEntity(1L, "Heater 1", room1, sensor1);
+
+        Mockito.when(heaterDao.findById(1L)).thenReturn(Optional.of(heater));
+        Mockito.when(heaterDao.save(Mockito.any(HeaterEntity.class))).thenReturn(heater);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/heaters/1/switch").with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        Assertions.assertThat(heater.getStatus().getValue()).isEqualTo(1.0);
     }
 }

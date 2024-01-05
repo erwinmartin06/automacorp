@@ -1,6 +1,7 @@
 package com.emse.spring.automacorp.model.mappers;
 
 import com.emse.spring.automacorp.model.SensorType;
+import com.emse.spring.automacorp.model.WindowStatus;
 import com.emse.spring.automacorp.model.entities.*;
 import com.emse.spring.automacorp.model.records.Building;
 import com.emse.spring.automacorp.model.records.Room;
@@ -9,7 +10,6 @@ import com.emse.spring.automacorp.model.records.Window;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 class BuildingMapperTest {
@@ -26,13 +26,17 @@ class BuildingMapperTest {
         roomTemp.setId(2L);
 
         RoomEntity roomEntity = new RoomEntity("Room Test", roomTemp, 1);
-        SensorEntity sensorWindow = new SensorEntity(SensorType.TEMPERATURE, "Window Sensor");
+
+        SensorEntity sensorWindow = new SensorEntity(SensorType.STATUS, "Window Sensor");
         sensorWindow.setId(5L);
-        sensorWindow.setValue(15.0);
+        sensorWindow.setValue(1.0);
+
         WindowEntity window1 =  new WindowEntity("Window 1", sensorWindow, roomEntity);
         window1.setId(10L);
+
         List<WindowEntity> windows = List.of(window1);
         roomEntity.setWindows(windows);
+        roomEntity.setHeaters(List.of());
         roomEntity.setId(3L);
         roomEntity.setTargetTemp(21.0);
 
@@ -52,12 +56,16 @@ class BuildingMapperTest {
                 List.of(new Room(
                         3L,
                         "Room Test",
-                        new Sensor(2L, "Room Temperature", 25.0, SensorType.TEMPERATURE),
+                        25.0,
                         21.0,
                         1,
                         List.of(
-                                new Window(10L, "Window 1", new Sensor(5L, "Window Sensor", 15.0, SensorType.TEMPERATURE), 3L)
-                        )
+                                new Window(10L,
+                                        "Window 1",
+                                        WindowStatus.OPENED,
+                                        3L)
+                        ),
+                        List.of()
                 ))
         );
 

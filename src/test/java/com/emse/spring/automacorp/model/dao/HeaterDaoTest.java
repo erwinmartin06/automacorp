@@ -12,10 +12,10 @@ class HeaterDaoTest {
     private HeaterDao heaterDao;
 
     @Test
-    public void shouldFindASensorById() {
+    public void shouldFindAHeaterById() {
         HeaterEntity heater = heaterDao.getReferenceById(-10L);
         Assertions.assertThat(heater.getName()).isEqualTo("Heater 1");
-        Assertions.assertThat(heater.getRoom().getId()).isEqualTo(-9);
+        Assertions.assertThat(heater.getRoom().getId()).isEqualTo(-10);
         Assertions.assertThat(heater.getStatus().getId()).isEqualTo(-6);
     }
 }

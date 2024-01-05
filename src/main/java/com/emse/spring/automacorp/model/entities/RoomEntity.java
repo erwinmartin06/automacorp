@@ -33,9 +33,12 @@ public class RoomEntity {
     private BuildingEntity building;
 
     public RoomEntity() {
+        heaters = List.of();
+        windows = List.of();
     }
 
     public RoomEntity(String name, SensorEntity currentTemp, int floor) {
+        this();
         this.name = name;
         this.currentTemp = currentTemp;
         this.floor = floor;

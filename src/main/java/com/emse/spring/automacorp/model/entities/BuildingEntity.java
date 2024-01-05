@@ -6,7 +6,6 @@ import java.util.List;
 @Entity
 @Table(name = "SP_BUILDING")
 public class BuildingEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,9 +20,11 @@ public class BuildingEntity {
     private List<RoomEntity> rooms;
 
     public BuildingEntity() {
+        rooms = List.of();
     }
 
     public BuildingEntity(String name, SensorEntity outsideTemperature, List<RoomEntity> rooms) {
+        this();
         this.name = name;
         this.outsideTemperature = outsideTemperature;
         this.rooms = rooms;

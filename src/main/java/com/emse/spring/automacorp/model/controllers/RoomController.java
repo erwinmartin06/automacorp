@@ -11,8 +11,10 @@ import com.emse.spring.automacorp.model.mappers.RoomMapper;
 import com.emse.spring.automacorp.model.records.Room;
 import com.emse.spring.automacorp.model.records.RoomCommand;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -67,29 +69,79 @@ public class RoomController {
         }
     }
 
-    @PutMapping(path = "/{roomId}/openWindows")
-    public void openWindows(@PathVariable Long roomId) {
-        RoomEntity room = roomDao.findById(roomId).orElse(null);
+    @PutMapping(path = "/{id}/openWindows")
+    @Transactional
+    public void openWindows(@PathVariable Long id) {
+        RoomEntity room = roomDao.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+
         SensorEntity windowStatus = new SensorEntity(SensorType.STATUS, "Sensor");
         windowStatus.setValue(1.0);
-        if (room != null) {
-            room.getWindows().forEach(window -> {
-                window.setWindowStatus(windowStatus);
-                windowDao.save(window);
-            });
-        }
+        sensorDao1.save(windowStatus);
+
+        room.getWindows().forEach(window -> {
+            window.setWindowStatus(windowStatus);
+            windowDao.save(window);
+        });
+
+        roomDao.save(room);
     }
 
-    @PutMapping(path = "/{roomId}/closeWindows")
-    public void closeWindows(@PathVariable Long roomId) {
-        RoomEntity room = roomDao.findById(roomId).orElse(null);
+
+    @PutMapping(path = "/{id}/closeWindows")
+    @Transactional
+    public void closeWindows(@PathVariable Long id) {
+        RoomEntity room = roomDao.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+
         SensorEntity windowStatus = new SensorEntity(SensorType.STATUS, "Sensor");
         windowStatus.setValue(0.0);
-        if (room != null) {
-            room.getWindows().forEach(window -> {
-                window.setWindowStatus(windowStatus);
-                windowDao.save(window);
-            });
-        }
+        sensorDao1.save(windowStatus);
+
+        room.getWindows().forEach(window -> {
+            window.setWindowStatus(windowStatus);
+            windowDao.save(window);
+        });
+
+        roomDao.save(room);
     }
+
+
+    @PutMapping(path = "/{id}/onHeaters")
+    @Transactional
+    public void onHeaters(@PathVariable Long id) {
+        RoomEntity room = roomDao.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+
+        SensorEntity heaterStatus = new SensorEntity(SensorType.STATUS, "Sensor");
+        heaterStatus.setValue(1.0);
+        sensorDao1.save(heaterStatus);
+
+        room.getHeaters().forEach(heater -> {
+            heater.setStatus(heaterStatus);
+            heaterDao.save(heater);
+        });
+
+        roomDao.save(room);
+    }
+
+
+    @PutMapping(path = "/{id}/offHeaters")
+    @Transactional
+    public void offHeaters(@PathVariable Long id) {
+        RoomEntity room = roomDao.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+
+        SensorEntity heaterStatus = new SensorEntity(SensorType.STATUS, "Sensor");
+        heaterStatus.setValue(0.0);
+        sensorDao1.save(heaterStatus);
+
+        room.getHeaters().forEach(heater -> {
+            heater.setStatus(heaterStatus);
+            heaterDao.save(heater);
+        });
+
+        roomDao.save(room);
+    }
+
 }

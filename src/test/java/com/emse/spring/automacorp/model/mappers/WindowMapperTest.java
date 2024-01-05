@@ -1,10 +1,10 @@
 package com.emse.spring.automacorp.model.mappers;
 
+import com.emse.spring.automacorp.model.WindowStatus;
 import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.entities.WindowEntity;
-import com.emse.spring.automacorp.model.records.Sensor;
 import com.emse.spring.automacorp.model.records.Window;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ class WindowMapperTest {
         Window expectedWindow = new Window (
                 2L,
                 "Window 1",
-                new Sensor(2L, "Window status", 0.0, SensorType.STATUS),
+                WindowStatus.CLOSED,
                 1L
         );
         Assertions.assertThat(window).usingRecursiveAssertion().isEqualTo(expectedWindow);

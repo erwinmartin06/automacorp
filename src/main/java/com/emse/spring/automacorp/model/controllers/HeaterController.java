@@ -8,8 +8,10 @@ import com.emse.spring.automacorp.model.mappers.HeaterMapper;
 import com.emse.spring.automacorp.model.records.Heater;
 import com.emse.spring.automacorp.model.records.HeaterCommand;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -61,6 +63,20 @@ public class HeaterController {
         entity.setRoom(roomDao.findById(heaterCommand.roomId()).orElse(null));
         entity.setStatus(sensorDao1.findById(heaterCommand.statusId()).orElse(null));
         return ResponseEntity.ok(HeaterMapper.of(heaterDao.save(entity)));
+    }
+
+    @PutMapping(path = "/{id}/switch")
+    public ResponseEntity<Heater> switchHeaterStatusById(@PathVariable Long id) {
+        HeaterEntity entity = heaterDao.findById(id).orElse(null);
+        if(entity != null && entity.getStatus() != null){
+            entity.getStatus().setValue(entity.getStatus().getValue() == 1.0 ? 0.0 : 1.0);
+        }
+        else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Heater not found");
+        }
+
+        heaterDao.save(entity);
+        return ResponseEntity.ok(HeaterMapper.of(entity));
     }
 
     @DeleteMapping(path = "/{id}")

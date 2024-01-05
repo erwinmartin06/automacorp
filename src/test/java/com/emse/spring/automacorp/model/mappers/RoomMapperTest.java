@@ -1,11 +1,11 @@
 package com.emse.spring.automacorp.model.mappers;
 
+import com.emse.spring.automacorp.model.WindowStatus;
 import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.entities.WindowEntity;
 import com.emse.spring.automacorp.model.records.Room;
-import com.emse.spring.automacorp.model.records.Sensor;
 import com.emse.spring.automacorp.model.records.Window;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,6 +31,7 @@ class RoomMapperTest {
         WindowEntity windowEntity = new WindowEntity("Window 1", windowStatus, roomEntity);
         windowEntity.setId(2L);
         roomEntity.setWindows(List.of(windowEntity));
+        roomEntity.setHeaters(List.of());
 
         // Act
         Room room = RoomMapper.of(roomEntity);
@@ -39,15 +40,16 @@ class RoomMapperTest {
         Room expectedRoom = new Room(
                 1L,
                 "Room",
-                new Sensor(1L, "Room temperature", 24.2, SensorType.TEMPERATURE),
+                24.2,
                 22.0,
                 1,
                 List.of(new Window(
                         2L,
                         "Window 1",
-                        new Sensor(2L, "Window status", 0.0, SensorType.STATUS),
+                        WindowStatus.CLOSED,
                         1L
-                ))
+                )),
+                List.of()
         );
         Assertions.assertThat(room).usingRecursiveAssertion().isEqualTo(expectedRoom);
     }

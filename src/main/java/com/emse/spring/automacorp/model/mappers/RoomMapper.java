@@ -10,10 +10,11 @@ public class RoomMapper {
         return new Room(
                 room.getId(),
                 room.getName(),
-                SensorMapper.of(room.getCurrentTemp()),
+                room.getCurrentTemp().getValue(),
                 room.getTargetTemp(),
                 room.getFloor(),
-                room.getWindows().stream().map(WindowMapper::of).collect(Collectors.toList())
+                room.getWindows().stream().map(WindowMapper::of).collect(Collectors.toList()),
+                room.getHeaters().stream().map(HeaterMapper::of).collect(Collectors.toList())
         );
     }
 }

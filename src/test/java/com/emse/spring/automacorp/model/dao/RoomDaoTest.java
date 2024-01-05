@@ -12,10 +12,10 @@ class RoomDaoTest {
     private RoomDao roomDao;
 
     @Test
-    public void shouldFindASensorById() {
+    public void shouldFindARoomById() {
         RoomEntity room = roomDao.getReferenceById(-10L);
         Assertions.assertThat(room.getName()).isEqualTo("Room1");
         Assertions.assertThat(room.getFloor()).isEqualTo(1);
-        Assertions.assertThat(room.getCurrentTemp().getId()).isEqualTo(-6);
+        Assertions.assertThat(room.getCurrentTemp().getId()).isEqualTo(-10);
     }
 }

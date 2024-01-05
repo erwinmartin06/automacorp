@@ -1,4 +1,6 @@
 package com.emse.spring.automacorp.model.records;
 
-public record Heater(Long id, String name, Room room, Sensor status) {
+import com.emse.spring.automacorp.model.HeaterStatus;
+
+public record Heater(Long id, String name, Long roomId, HeaterStatus heaterStatus) {
 }

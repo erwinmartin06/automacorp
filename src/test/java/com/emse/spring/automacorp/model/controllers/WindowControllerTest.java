@@ -9,6 +9,7 @@ import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.entities.WindowEntity;
 import com.emse.spring.automacorp.model.records.WindowCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -198,4 +199,21 @@ class WindowControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
+    @Test
+    @WithMockUser(username = "Erwin", roles = "ADMIN")
+    void shouldSwitchWindowStatusById() throws Exception {
+        SensorEntity sensorEntity = createSensorEntity(1L, "Sensor 1");
+        sensorEntity.setValue(1.0);
+        RoomEntity roomEntity = createRoomEntity(1L, "Room 1", sensorEntity, 3);
+        WindowEntity windowEntity = createWindowEntity(1L, "Window 1", sensorEntity, roomEntity);
+
+        Mockito.when(windowDao.findById(1L)).thenReturn(Optional.of(windowEntity));
+        Mockito.when(sensorDao1.findById(1L)).thenReturn(Optional.of(sensorEntity));
+        Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(roomEntity));
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/windows/1/switch").with(csrf()))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        Assertions.assertThat(windowEntity.getWindowStatus().getValue()).isEqualTo(0.0);
+    }
 }
