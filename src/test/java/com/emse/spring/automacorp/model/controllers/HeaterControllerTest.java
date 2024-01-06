@@ -134,10 +134,9 @@ class HeaterControllerTest {
         SensorEntity sensor1 = createSensorEntity();
         RoomEntity room = createRoomEntity(1L, "Room 1", sensor1, 3, 21.0, List.of(), List.of(), null);
 
-        room.setId(1L);
         HeaterEntity heater = createHeaterEntity(1L, "Heater 1", room, sensor1);
-
         HeaterCommand expectedHeater = new HeaterCommand(heater.getName(), heater.getRoom().getId(), heater.getStatus().getId());
+
         String json = objectMapper.writeValueAsString(expectedHeater);
 
         Mockito.when(heaterDao.findById(1L)).thenReturn(Optional.of(heater));

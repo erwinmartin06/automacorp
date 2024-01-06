@@ -59,9 +59,11 @@ public class HeaterController {
         if (entity == null) {
             return ResponseEntity.badRequest().build();
         }
+
         entity.setName(heaterCommand.name());
         entity.setRoom(roomDao.findById(heaterCommand.roomId()).orElse(null));
         entity.setStatus(sensorDao1.findById(heaterCommand.statusId()).orElse(null));
+
         return ResponseEntity.ok(HeaterMapper.of(heaterDao.save(entity)));
     }
 

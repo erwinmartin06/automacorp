@@ -11,7 +11,7 @@ public class HeaterEntity {
     @Column(nullable = false, length = 255)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private RoomEntity room;
 
     @ManyToOne(optional = false)

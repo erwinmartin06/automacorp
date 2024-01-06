@@ -6,10 +6,8 @@ import com.emse.spring.automacorp.model.mappers.RoomMapper;
 import com.emse.spring.automacorp.model.records.Room;
 import com.emse.spring.automacorp.model.records.RoomCommand;
 import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -49,14 +47,33 @@ public class RoomController {
     }
 
     @PostMapping
-    public ResponseEntity<Room> createOrUpdate(@RequestBody RoomCommand command) {
+    public ResponseEntity<Room> create(@RequestBody RoomCommand command) {
         RoomEntity roomEntity = new RoomEntity();
+
         roomEntity.setName(command.name());
         roomEntity.setCurrentTemp(sensorDao1.getReferenceById(command.currentTempId()));
         roomEntity.setFloor(command.floor());
         roomEntity.setTargetTemp(command.targetTemp());
         roomEntity.setBuilding(buildingDao.findById(command.buildingId()).orElse(null));
+
         RoomEntity saved = roomDao.save(roomEntity);
+        return ResponseEntity.ok(RoomMapper.of(saved));
+    }
+
+    @PutMapping(path = "/{id}")
+    public ResponseEntity<Room> update(@PathVariable Long id, @RequestBody RoomCommand command) {
+        RoomEntity room = roomDao.findById(id).orElse(null);
+        if (room == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        room.setName(command.name());
+        room.setCurrentTemp(sensorDao1.findById(command.currentTempId()).orElse(null));
+        room.setFloor(command.floor());
+        room.setTargetTemp(command.targetTemp());
+        room.setBuilding(buildingDao.findById(command.buildingId()).orElse(null));
+
+        RoomEntity saved = roomDao.save(room);
         return ResponseEntity.ok(RoomMapper.of(saved));
     }
 
@@ -72,48 +89,60 @@ public class RoomController {
 
     @PutMapping(path = "/{id}/openWindows")
     @Transactional
-    public void openWindows(@PathVariable Long id) {
-        RoomEntity room = roomDao.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+    public ResponseEntity<Room> openWindows(@PathVariable Long id) {
+        RoomEntity room = roomDao.findById(id).orElse(null);
+        if (room == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
         windowDao.openAllWindowsByRoom(id);
 
-        roomDao.save(room);
+        RoomEntity saved = roomDao.save(room);
+        return ResponseEntity.ok(RoomMapper.of(saved));
     }
 
 
     @PutMapping(path = "/{id}/closeWindows")
     @Transactional
-    public void closeWindows(@PathVariable Long id) {
-        RoomEntity room = roomDao.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+    public ResponseEntity<Room> closeWindows(@PathVariable Long id) {
+        RoomEntity room = roomDao.findById(id).orElse(null);
+        if (room == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
         windowDao.closeAllWindowsByRoom(id);
 
-        roomDao.save(room);
+        RoomEntity saved = roomDao.save(room);
+        return ResponseEntity.ok(RoomMapper.of(saved));
     }
 
 
     @PutMapping(path = "/{id}/onHeaters")
     @Transactional
-    public void onHeaters(@PathVariable Long id) {
-        RoomEntity room = roomDao.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+    public ResponseEntity<Room> onHeaters(@PathVariable Long id) {
+        RoomEntity room = roomDao.findById(id).orElse(null);
+        if (room == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
         heaterDao.onAllHeatersByRoom(id);
 
-        roomDao.save(room);
+        RoomEntity saved = roomDao.save(room);
+        return ResponseEntity.ok(RoomMapper.of(saved));
     }
 
 
     @PutMapping(path = "/{id}/offHeaters")
     @Transactional
-    public void offHeaters(@PathVariable Long id) {
-        RoomEntity room = roomDao.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found"));
+    public ResponseEntity<Room> offHeaters(@PathVariable Long id) {
+        RoomEntity room = roomDao.findById(id).orElse(null);
+        if (room == null) {
+            return ResponseEntity.badRequest().build();
+        }
 
         heaterDao.offAllHeatersByRoom(id);
 
-        roomDao.save(room);
+        RoomEntity saved = roomDao.save(room);
+        return ResponseEntity.ok(RoomMapper.of(saved));
     }
 }

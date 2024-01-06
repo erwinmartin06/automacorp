@@ -2,7 +2,6 @@ package com.emse.spring.automacorp.model.controllers;
 
 import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.BuildingEntity;
-import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.mappers.BuildingMapper;
 import com.emse.spring.automacorp.model.records.Building;
 import com.emse.spring.automacorp.model.records.BuildingCommand;
@@ -49,12 +48,7 @@ public class BuildingController {
 
     @PostMapping
     public ResponseEntity<Building> create(@RequestBody BuildingCommand command) {
-        List<RoomEntity> rooms = command.roomId().stream()
-                .map(roomId -> roomDao.findById(roomId).orElse(null))
-                .collect(Collectors.toList());
-
-        BuildingEntity entity = new BuildingEntity(command.name(), sensorDao1.findById(command.outsideTemperatureId()).orElse(null), rooms);
-        rooms.forEach(room -> room.setBuilding(entity));
+        BuildingEntity entity = new BuildingEntity(command.name(), sensorDao1.findById(command.outsideTemperatureId()).orElse(null), List.of());
 
         BuildingEntity saved = buildingDao.save(entity);
         return ResponseEntity.ok(BuildingMapper.of(saved));
@@ -69,12 +63,6 @@ public class BuildingController {
 
         entity.setName(command.name());
         entity.setOutsideTemperature(sensorDao1.findById(command.outsideTemperatureId()).orElse(null));
-
-        List<RoomEntity> rooms = command.roomId().stream()
-                .map(roomId -> roomDao.findById(roomId).orElse(null))
-                .collect(Collectors.toList());
-        entity.setRooms(rooms);
-        rooms.forEach(room -> room.setBuilding(entity));
 
         return ResponseEntity.ok(BuildingMapper.of(buildingDao.save(entity)));
     }

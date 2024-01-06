@@ -102,7 +102,7 @@ class BuildingControllerTest {
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldNotUpdateUnknownEntity() throws Exception {
         BuildingEntity buildingEntity = createBuildingEntity(1L, "Building 1", new SensorEntity());
-        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId(), List.of());
+        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId());
         String json = objectMapper.writeValueAsString(expectedBuilding);
 
         Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.empty());
@@ -123,7 +123,7 @@ class BuildingControllerTest {
         SensorEntity sensorEntity = createSensorEntity();
         BuildingEntity buildingEntity = createBuildingEntity(1L, "Building 1", sensorEntity);
 
-        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId(), List.of());
+        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId());
         String json = objectMapper.writeValueAsString(expectedBuilding);
 
         Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.of(buildingEntity));
@@ -149,7 +149,7 @@ class BuildingControllerTest {
         SensorEntity sensorEntity = createSensorEntity();
         BuildingEntity buildingEntity = createBuildingEntity(1L, "Building 1", sensorEntity);
 
-        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId(), List.of());
+        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId());
         String json = objectMapper.writeValueAsString(expectedBuilding);
 
         Mockito.when(buildingDao.existsById(1L)).thenReturn(false);

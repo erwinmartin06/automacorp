@@ -52,13 +52,14 @@ class RoomControllerTest {
         return sensorEntity;
     }
 
-    RoomEntity createRoomEntity(Long id, String name, SensorEntity currentTemp, int floor, double targetTemp, List<WindowEntity> windows, List<HeaterEntity> heaters) {
+    RoomEntity createRoomEntity(Long id, String name, SensorEntity currentTemp, int floor, double targetTemp, List<WindowEntity> windows, List<HeaterEntity> heaters, BuildingEntity buildingEntity) {
         RoomEntity roomEntity = new RoomEntity(name, currentTemp, floor);
         roomEntity.setId(id);
         roomEntity.setTargetTemp(targetTemp);
         roomEntity.setWindows(windows);
         roomEntity.setHeaters(heaters);
-        roomEntity.setBuilding(new BuildingEntity());
+        buildingEntity.setId(1L);
+        roomEntity.setBuilding(buildingEntity);
         return roomEntity;
     }
 
@@ -80,8 +81,8 @@ class RoomControllerTest {
         SensorEntity sensor1 = createSensorEntity(1L, "Sensor 1");
         SensorEntity sensor2 = createSensorEntity(2L, "Sensor 2");
 
-        RoomEntity room1 = createRoomEntity(1L, "Room 1", sensor1, 3, 21.0, List.of(), List.of());
-        RoomEntity room2 = createRoomEntity(2L, "Room 2", sensor2, 4, 22.0, List.of(), List.of());
+        RoomEntity room1 = createRoomEntity(1L, "Room 1", sensor1, 3, 21.0, List.of(), List.of(), new BuildingEntity());
+        RoomEntity room2 = createRoomEntity(2L, "Room 2", sensor2, 4, 22.0, List.of(), List.of(), new BuildingEntity());
 
         Mockito.when(roomDao.findAll()).thenReturn(List.of(room1, room2));
 
@@ -112,7 +113,7 @@ class RoomControllerTest {
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldFindById() throws Exception {
         SensorEntity sensor = createSensorEntity(1L, "Sensor 1");
-        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of());
+        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of(), new BuildingEntity());
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
 
@@ -125,9 +126,9 @@ class RoomControllerTest {
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
-    void shouldCreateOrUpdateRoom() throws Exception {
+    void shouldCreate() throws Exception {
         SensorEntity sensor = createSensorEntity(1L, "Sensor 1");
-        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of());
+        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of(), new BuildingEntity());
         RoomCommand expectedRoom = new RoomCommand(room.getName(), sensor.getId(), room.getTargetTemp(), room.getFloor(), room.getBuilding().getId());
 
         String json = objectMapper.writeValueAsString(expectedRoom);
@@ -151,6 +152,34 @@ class RoomControllerTest {
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
+    void shouldUpdate() throws Exception {
+        SensorEntity sensor = createSensorEntity(1L, "Sensor 1");
+        BuildingEntity building = new BuildingEntity();
+        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of(), building);
+        RoomCommand expectedRoom = new RoomCommand(room.getName(), sensor.getId(), room.getTargetTemp(), room.getFloor(), room.getBuilding().getId());
+
+        String json = objectMapper.writeValueAsString(expectedRoom);
+
+        Mockito.when(roomDao.findById(room.getId())).thenReturn(Optional.of(room));
+        Mockito.when(sensorDao1.findById(sensor.getId())).thenReturn(Optional.of(sensor));
+        Mockito.when(buildingDao.findById(building.getId())).thenReturn(Optional.of(building));
+        Mockito.when(roomDao.save(Mockito.any(RoomEntity.class))).thenReturn(room);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .put("/api/rooms/1")
+                                .content(json)
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .with(csrf())
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Room 1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.targetTemp").value("21.0"));
+    }
+
+    @Test
+    @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldDeleteRoomAndAssociatedEntities() throws Exception {
         SensorEntity sensor = createSensorEntity(1L, "Sensor 1");
         List<WindowEntity> windows = List.of(
@@ -161,7 +190,7 @@ class RoomControllerTest {
                 createHeaterEntity(1L, "Heater 1", new RoomEntity(), new SensorEntity()),
                 createHeaterEntity(2L, "Heater 2", new RoomEntity(), new SensorEntity())
         );
-        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 22.5, windows, heaters);
+        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 22.5, windows, heaters, new BuildingEntity());
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
 
@@ -178,11 +207,26 @@ class RoomControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldOpenWindows() throws Exception {
-        List<WindowEntity> windows = List.of(new WindowEntity(), new WindowEntity());
-        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, windows, List.of());
+        SensorEntity sensorEntity = new SensorEntity(SensorType.STATUS, "Sensor 1");
+        sensorEntity.setValue(0.0);
+        sensorEntity.setId(1L);
+
+        RoomEntity room = new RoomEntity();
+        BuildingEntity buildingEntity = new BuildingEntity();
+
+        WindowEntity window1 = createWindowEntity(1L, "Window 1", sensorEntity, room);
+        WindowEntity window2 = createWindowEntity(2L, "Window 2", sensorEntity, room);
+
+        room.setWindows(List.of(window1, window2));
+        room.setCurrentTemp(sensorEntity);
+        room.setBuilding(buildingEntity);
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
-        Mockito.when(windowDao.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+        Mockito.when(sensorDao1.findById(sensorEntity.getId())).thenReturn(Optional.of(sensorEntity));
+        Mockito.when(windowDao.findById(window1.getId())).thenReturn(Optional.of(window1));
+        Mockito.when(windowDao.findById(window2.getId())).thenReturn(Optional.of(window2));
+        Mockito.when(buildingDao.findById(buildingEntity.getId())).thenReturn(Optional.of(buildingEntity));
+        Mockito.when(roomDao.save(Mockito.any(RoomEntity.class))).thenReturn(room);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/rooms/1/openWindows").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -193,11 +237,26 @@ class RoomControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldCloseWindows() throws Exception {
-        List<WindowEntity> windows = List.of(new WindowEntity(), new WindowEntity());
-        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, windows, List.of());
+        SensorEntity sensorEntity = new SensorEntity(SensorType.STATUS, "Sensor 1");
+        sensorEntity.setValue(0.0);
+        sensorEntity.setId(1L);
+
+        RoomEntity room = new RoomEntity();
+        BuildingEntity buildingEntity = new BuildingEntity();
+
+        WindowEntity window1 = createWindowEntity(1L, "Window 1", sensorEntity, room);
+        WindowEntity window2 = createWindowEntity(2L, "Window 2", sensorEntity, room);
+
+        room.setWindows(List.of(window1, window2));
+        room.setCurrentTemp(sensorEntity);
+        room.setBuilding(buildingEntity);
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
-        Mockito.when(windowDao.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+        Mockito.when(sensorDao1.findById(sensorEntity.getId())).thenReturn(Optional.of(sensorEntity));
+        Mockito.when(windowDao.findById(window1.getId())).thenReturn(Optional.of(window1));
+        Mockito.when(windowDao.findById(window2.getId())).thenReturn(Optional.of(window2));
+        Mockito.when(buildingDao.findById(buildingEntity.getId())).thenReturn(Optional.of(buildingEntity));
+        Mockito.when(roomDao.save(Mockito.any(RoomEntity.class))).thenReturn(room);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/rooms/1/closeWindows").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -208,11 +267,26 @@ class RoomControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldTurnOnHeaters() throws Exception {
-        List<HeaterEntity> heaters = List.of(new HeaterEntity(), new HeaterEntity());
-        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, List.of(), heaters);
+        SensorEntity sensorEntity = new SensorEntity(SensorType.STATUS, "Sensor 1");
+        sensorEntity.setValue(0.0);
+        sensorEntity.setId(1L);
+
+        RoomEntity room = new RoomEntity();
+        BuildingEntity buildingEntity = new BuildingEntity();
+
+        HeaterEntity heater1 = createHeaterEntity(1L, "Heater 1", room, sensorEntity);
+        HeaterEntity heater2 = createHeaterEntity(2L, "Heater 2", room, sensorEntity);
+
+        room.setHeaters(List.of(heater1, heater2));
+        room.setCurrentTemp(sensorEntity);
+        room.setBuilding(buildingEntity);
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
-        Mockito.when(heaterDao.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+        Mockito.when(sensorDao1.findById(sensorEntity.getId())).thenReturn(Optional.of(sensorEntity));
+        Mockito.when(heaterDao.findById(heater1.getId())).thenReturn(Optional.of(heater1));
+        Mockito.when(heaterDao.findById(heater2.getId())).thenReturn(Optional.of(heater2));
+        Mockito.when(buildingDao.findById(buildingEntity.getId())).thenReturn(Optional.of(buildingEntity));
+        Mockito.when(roomDao.save(Mockito.any(RoomEntity.class))).thenReturn(room);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/rooms/1/onHeaters").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -223,11 +297,26 @@ class RoomControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldTurnOffHeaters() throws Exception {
-        List<HeaterEntity> heaters = List.of(new HeaterEntity(), new HeaterEntity());
-        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, List.of(), heaters);
+        SensorEntity sensorEntity = new SensorEntity(SensorType.STATUS, "Sensor 1");
+        sensorEntity.setValue(0.0);
+        sensorEntity.setId(1L);
+
+        RoomEntity room = new RoomEntity();
+        BuildingEntity buildingEntity = new BuildingEntity();
+
+        HeaterEntity heater1 = createHeaterEntity(1L, "Heater 1", room, sensorEntity);
+        HeaterEntity heater2 = createHeaterEntity(2L, "Heater 2", room, sensorEntity);
+
+        room.setHeaters(List.of(heater1, heater2));
+        room.setCurrentTemp(sensorEntity);
+        room.setBuilding(buildingEntity);
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
-        Mockito.when(heaterDao.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
+        Mockito.when(sensorDao1.findById(sensorEntity.getId())).thenReturn(Optional.of(sensorEntity));
+        Mockito.when(heaterDao.findById(heater1.getId())).thenReturn(Optional.of(heater1));
+        Mockito.when(heaterDao.findById(heater2.getId())).thenReturn(Optional.of(heater2));
+        Mockito.when(buildingDao.findById(buildingEntity.getId())).thenReturn(Optional.of(buildingEntity));
+        Mockito.when(roomDao.save(Mockito.any(RoomEntity.class))).thenReturn(room);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/rooms/1/offHeaters").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
