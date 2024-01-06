@@ -29,7 +29,7 @@ public class RoomEntity {
     @OneToMany(mappedBy = "room")
     private List<WindowEntity> windows;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     private BuildingEntity building;
 
     public RoomEntity() {

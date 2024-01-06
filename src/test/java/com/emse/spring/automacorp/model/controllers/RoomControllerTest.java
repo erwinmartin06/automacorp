@@ -5,7 +5,6 @@ import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.*;
 import com.emse.spring.automacorp.model.records.RoomCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -43,6 +42,9 @@ class RoomControllerTest {
     @MockBean
     private HeaterDao heaterDao;
 
+    @MockBean
+    private BuildingDao buildingDao;
+
     SensorEntity createSensorEntity(Long id, String name) {
         SensorEntity sensorEntity = new SensorEntity(SensorType.TEMPERATURE, name);
         sensorEntity.setId(id);
@@ -50,13 +52,13 @@ class RoomControllerTest {
         return sensorEntity;
     }
 
-    RoomEntity createRoomEntity(Long id, String name, SensorEntity currentTemp, int floor, double targetTemp, List<WindowEntity> windows, List<HeaterEntity> heaters, BuildingEntity building) {
+    RoomEntity createRoomEntity(Long id, String name, SensorEntity currentTemp, int floor, double targetTemp, List<WindowEntity> windows, List<HeaterEntity> heaters) {
         RoomEntity roomEntity = new RoomEntity(name, currentTemp, floor);
         roomEntity.setId(id);
         roomEntity.setTargetTemp(targetTemp);
         roomEntity.setWindows(windows);
         roomEntity.setHeaters(heaters);
-        roomEntity.setBuilding(building);
+        roomEntity.setBuilding(new BuildingEntity());
         return roomEntity;
     }
 
@@ -78,8 +80,8 @@ class RoomControllerTest {
         SensorEntity sensor1 = createSensorEntity(1L, "Sensor 1");
         SensorEntity sensor2 = createSensorEntity(2L, "Sensor 2");
 
-        RoomEntity room1 = createRoomEntity(1L, "Room 1", sensor1, 3, 21.0, List.of(), List.of(), null);
-        RoomEntity room2 = createRoomEntity(2L, "Room 2", sensor2, 4, 22.0, List.of(), List.of(), null);
+        RoomEntity room1 = createRoomEntity(1L, "Room 1", sensor1, 3, 21.0, List.of(), List.of());
+        RoomEntity room2 = createRoomEntity(2L, "Room 2", sensor2, 4, 22.0, List.of(), List.of());
 
         Mockito.when(roomDao.findAll()).thenReturn(List.of(room1, room2));
 
@@ -110,7 +112,7 @@ class RoomControllerTest {
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldFindById() throws Exception {
         SensorEntity sensor = createSensorEntity(1L, "Sensor 1");
-        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of(), null);
+        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of());
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
 
@@ -125,8 +127,8 @@ class RoomControllerTest {
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldCreateOrUpdateRoom() throws Exception {
         SensorEntity sensor = createSensorEntity(1L, "Sensor 1");
-        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of(), null);
-        RoomCommand expectedRoom = new RoomCommand(room.getName(), sensor.getId(), room.getTargetTemp(), room.getFloor());
+        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of());
+        RoomCommand expectedRoom = new RoomCommand(room.getName(), sensor.getId(), room.getTargetTemp(), room.getFloor(), room.getBuilding().getId());
 
         String json = objectMapper.writeValueAsString(expectedRoom);
 
@@ -159,7 +161,7 @@ class RoomControllerTest {
                 createHeaterEntity(1L, "Heater 1", new RoomEntity(), new SensorEntity()),
                 createHeaterEntity(2L, "Heater 2", new RoomEntity(), new SensorEntity())
         );
-        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 22.5, windows, heaters, new BuildingEntity());
+        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 22.5, windows, heaters);
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
 
@@ -169,15 +171,15 @@ class RoomControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/rooms/1").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        windows.forEach(window -> Mockito.verify(windowDao).deleteById(window.getId()));
-        heaters.forEach(heater -> Mockito.verify(heaterDao).deleteById(heater.getId()));
+        Mockito.verify(windowDao).deleteByRoom(1L);
+        Mockito.verify(heaterDao).deleteByRoom(1L);
     }
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldOpenWindows() throws Exception {
         List<WindowEntity> windows = List.of(new WindowEntity(), new WindowEntity());
-        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, windows, List.of(), new BuildingEntity());
+        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, windows, List.of());
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
         Mockito.when(windowDao.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
@@ -185,14 +187,14 @@ class RoomControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/rooms/1/openWindows").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        windows.forEach(window -> Assertions.assertThat(window.getWindowStatus().getValue()).isEqualTo(1.0));
+        Mockito.verify(windowDao).openAllWindowsByRoom(1L);
     }
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldCloseWindows() throws Exception {
         List<WindowEntity> windows = List.of(new WindowEntity(), new WindowEntity());
-        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, windows, List.of(), new BuildingEntity());
+        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, windows, List.of());
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
         Mockito.when(windowDao.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
@@ -200,14 +202,14 @@ class RoomControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/rooms/1/closeWindows").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        windows.forEach(window -> Assertions.assertThat(window.getWindowStatus().getValue()).isEqualTo(0.0));
+        Mockito.verify(windowDao).closeAllWindowsByRoom(1L);
     }
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldTurnOnHeaters() throws Exception {
         List<HeaterEntity> heaters = List.of(new HeaterEntity(), new HeaterEntity());
-        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, List.of(), heaters, new BuildingEntity());
+        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, List.of(), heaters);
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
         Mockito.when(heaterDao.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
@@ -215,14 +217,14 @@ class RoomControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/rooms/1/onHeaters").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        heaters.forEach(heater -> Assertions.assertThat(heater.getStatus().getValue()).isEqualTo(1.0));
+        Mockito.verify(heaterDao).onAllHeatersByRoom(1L);
     }
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldTurnOffHeaters() throws Exception {
         List<HeaterEntity> heaters = List.of(new HeaterEntity(), new HeaterEntity());
-        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, List.of(), heaters, new BuildingEntity());
+        RoomEntity room = createRoomEntity(1L, "Room 1", new SensorEntity(), 3, 22.5, List.of(), heaters);
 
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
         Mockito.when(heaterDao.save(Mockito.any())).thenAnswer(i -> i.getArgument(0));
@@ -230,6 +232,6 @@ class RoomControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/rooms/1/offHeaters").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        heaters.forEach(heater -> Assertions.assertThat(heater.getStatus().getValue()).isEqualTo(0.0));
+        Mockito.verify(heaterDao).offAllHeatersByRoom(1L);
     }
 }

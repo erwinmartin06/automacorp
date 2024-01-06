@@ -1,6 +1,7 @@
 package com.emse.spring.automacorp.model.mappers;
 
 import com.emse.spring.automacorp.model.WindowStatus;
+import com.emse.spring.automacorp.model.entities.BuildingEntity;
 import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.SensorType;
@@ -33,6 +34,10 @@ class RoomMapperTest {
         roomEntity.setWindows(List.of(windowEntity));
         roomEntity.setHeaters(List.of());
 
+        BuildingEntity buildingEntity = new BuildingEntity("Building 1", currentTemperature, List.of());
+        buildingEntity.setId(1L);
+        roomEntity.setBuilding(buildingEntity);
+
         // Act
         Room room = RoomMapper.of(roomEntity);
 
@@ -43,6 +48,7 @@ class RoomMapperTest {
                 24.2,
                 22.0,
                 1,
+                1L,
                 List.of(new Window(
                         2L,
                         "Window 1",

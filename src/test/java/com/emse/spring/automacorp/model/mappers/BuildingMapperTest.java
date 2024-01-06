@@ -44,6 +44,8 @@ class BuildingMapperTest {
         BuildingEntity buildingEntity = new BuildingEntity("Building Test", outsideTemperature, rooms);
         buildingEntity.setId(4L);
 
+        roomEntity.setBuilding(buildingEntity);
+
         //Act
         Building building = BuildingMapper.of(buildingEntity);
 
@@ -58,6 +60,7 @@ class BuildingMapperTest {
                         25.0,
                         21.0,
                         1,
+                        4L,
                         List.of(
                                 new Window(10L,
                                         "Window 1",

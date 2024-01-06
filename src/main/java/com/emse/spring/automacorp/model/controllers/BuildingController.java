@@ -84,8 +84,8 @@ public class BuildingController {
         BuildingEntity building = buildingDao.findById(id).orElse(null);
         if (building != null) {
             building.getRooms().forEach(room -> {
-                room.getWindows().forEach(window -> windowDao.deleteById(window.getId()));
-                room.getHeaters().forEach(heater -> heaterDao.deleteById(heater.getId()));
+                windowDao.deleteByRoom(room.getId());
+                heaterDao.deleteByRoom(room.getId());
                 roomDao.deleteById(room.getId());
             });
             buildingDao.deleteById(id);

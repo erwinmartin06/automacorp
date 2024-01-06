@@ -205,12 +205,13 @@ class BuildingControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/buildings/" + buildingId).with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(roomDao).deleteById(room1.getId());
-        Mockito.verify(roomDao).deleteById(room2.getId());
-        Mockito.verify(windowDao).deleteById(window1.getId());
-        Mockito.verify(windowDao).deleteById(window2.getId());
-        Mockito.verify(heaterDao).deleteById(heater1.getId());
-        Mockito.verify(heaterDao).deleteById(heater2.getId());
+        Mockito.verify(windowDao).deleteByRoom(1L);
+        Mockito.verify(windowDao).deleteByRoom(2L);
+        Mockito.verify(heaterDao).deleteByRoom(1L);
+        Mockito.verify(heaterDao).deleteByRoom(2L);
+        Mockito.verify(roomDao).deleteById(1L);
+        Mockito.verify(roomDao).deleteById(2L);
+        Mockito.verify(buildingDao).deleteById(buildingId);
     }
 
 }

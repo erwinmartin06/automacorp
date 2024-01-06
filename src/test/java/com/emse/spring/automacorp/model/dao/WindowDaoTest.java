@@ -16,6 +16,9 @@ class WindowDaoTest {
     @Autowired
     private WindowDao windowDao;
 
+    @Autowired
+    private RoomDao roomDao;
+
     @Test
     public void shouldFindAWindowById() {
         WindowEntity window = windowDao.getReferenceById(-10L);
@@ -49,9 +52,6 @@ class WindowDaoTest {
                         Tuple.tuple(-9L, "Window 2")
                 );
     }
-
-    @Autowired
-    private RoomDao roomDao;
 
     @Test
     public void shouldDeleteWindowsRoom() {
