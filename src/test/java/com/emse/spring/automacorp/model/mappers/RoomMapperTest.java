@@ -49,6 +49,7 @@ class RoomMapperTest {
                 22.0,
                 1,
                 1L,
+                1L,
                 List.of(new Window(
                         2L,
                         "Window 1",

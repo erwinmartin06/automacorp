@@ -14,6 +14,7 @@ public class RoomMapper {
                 room.getTargetTemp(),
                 room.getFloor(),
                 room.getBuilding().getId(),
+                room.getCurrentTemp().getId(),
                 room.getWindows().stream().map(WindowMapper::of).collect(Collectors.toList()),
                 room.getHeaters().stream().map(HeaterMapper::of).collect(Collectors.toList())
         );

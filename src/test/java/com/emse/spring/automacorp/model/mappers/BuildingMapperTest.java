@@ -61,6 +61,7 @@ class BuildingMapperTest {
                         21.0,
                         1,
                         4L,
+                        2L,
                         List.of(
                                 new Window(10L,
                                         "Window 1",
