@@ -41,6 +41,15 @@ public class WindowController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping(path = "/custom/{roomName}")
+    public List<Window> findWindowsByRoomName(@PathVariable String roomName) {
+        return windowDao.findAllWindowsByRoomName(roomName)
+                .stream()
+                .map(WindowMapper::of)
+                .sorted(Comparator.comparing(Window::name))
+                .collect(Collectors.toList());
+    }
+
     @GetMapping(path = "/{id}")
     public Window findById(@PathVariable Long id) {
         return windowDao.findById(id).map(WindowMapper::of).orElse(null);
