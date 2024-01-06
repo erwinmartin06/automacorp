@@ -41,6 +41,15 @@ public class HeaterController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping(path = "/custom/{roomName}")
+    public List<Heater> findHeatersByRoomName(@PathVariable String roomName) {
+        return heaterDao.findAllHeatersByRoomName(roomName)
+                .stream()
+                .map(HeaterMapper::of)
+                .sorted(Comparator.comparing(Heater::name))
+                .collect(Collectors.toList());
+    }
+
     @GetMapping(path = "/{id}")
     public Heater findById(@PathVariable Long id) {
         return heaterDao.findById(id).map(HeaterMapper::of).orElse(null);
