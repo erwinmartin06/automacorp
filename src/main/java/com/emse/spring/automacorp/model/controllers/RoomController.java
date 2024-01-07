@@ -3,8 +3,8 @@ package com.emse.spring.automacorp.model.controllers;
 import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.mappers.RoomMapper;
-import com.emse.spring.automacorp.model.records.Room;
-import com.emse.spring.automacorp.model.records.RoomCommand;
+import com.emse.spring.automacorp.model.records.dao.Room;
+import com.emse.spring.automacorp.model.records.dto.RoomCommand;
 import jakarta.transaction.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +35,15 @@ public class RoomController {
     @GetMapping
     public List<Room> findAll() {
         return roomDao.findAll()
+                .stream()
+                .map(RoomMapper::of)
+                .sorted(Comparator.comparing(Room::name))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping(path = "/custom/{buildingName}")
+    public List<Room> findRoomsByBuildingName(@PathVariable String buildingName) {
+        return roomDao.findAllRoomsByBuildingName(buildingName)
                 .stream()
                 .map(RoomMapper::of)
                 .sorted(Comparator.comparing(Room::name))

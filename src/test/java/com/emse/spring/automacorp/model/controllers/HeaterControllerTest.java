@@ -1,13 +1,15 @@
 package com.emse.spring.automacorp.model.controllers;
 
+import com.emse.spring.automacorp.model.HeaterStatus;
 import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.*;
-import com.emse.spring.automacorp.model.records.HeaterCommand;
+import com.emse.spring.automacorp.model.records.dto.HeaterCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -113,7 +115,7 @@ class HeaterControllerTest {
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldNotUpdateUnknownEntity() throws Exception {
         HeaterEntity heaterEntity = createHeaterEntity(1L, "Heater 1", new RoomEntity(), new SensorEntity());
-        HeaterCommand expectedHeater = new HeaterCommand(heaterEntity.getName(), heaterEntity.getRoom().getId(), heaterEntity.getStatus().getId());
+        HeaterCommand expectedHeater = new HeaterCommand(heaterEntity.getName(), HeaterStatus.ON, heaterEntity.getStatus().getId());
         String json = objectMapper.writeValueAsString(expectedHeater);
 
         Mockito.when(heaterDao.findById(1L)).thenReturn(Optional.empty());
@@ -131,19 +133,23 @@ class HeaterControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldUpdate() throws Exception {
+        // Setup initial entities
         SensorEntity sensor1 = createSensorEntity();
         RoomEntity room = createRoomEntity(1L, "Room 1", sensor1, 3, 21.0, List.of(), List.of(), null);
-
         HeaterEntity heater = createHeaterEntity(1L, "Heater 1", room, sensor1);
-        HeaterCommand expectedHeater = new HeaterCommand(heater.getName(), heater.getRoom().getId(), heater.getStatus().getId());
 
-        String json = objectMapper.writeValueAsString(expectedHeater);
+        // Change the status for the test
+        HeaterStatus newStatus = HeaterStatus.ON;
+        HeaterCommand updatedHeater = new HeaterCommand(heater.getName(), newStatus, heater.getRoom().getId());
+        String json = objectMapper.writeValueAsString(updatedHeater);
 
+        // Mocking the findById and save methods
         Mockito.when(heaterDao.findById(1L)).thenReturn(Optional.of(heater));
-        Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
         Mockito.when(sensorDao1.findById(1L)).thenReturn(Optional.of(sensor1));
+        Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
         Mockito.when(heaterDao.save(Mockito.any(HeaterEntity.class))).thenReturn(heater);
 
+        // Perform the PUT request
         mockMvc.perform(
                         MockMvcRequestBuilders
                                 .put("/api/heaters/1")
@@ -151,25 +157,39 @@ class HeaterControllerTest {
                                 .content(json)
                                 .with(csrf())
                 )
-                // check the HTTP response
+                // Check the HTTP response
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Heater 1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"));
+
+        // Verify that the sensorDao1.save method was called with the updated sensor entity
+        ArgumentCaptor<SensorEntity> sensorEntityCaptor = ArgumentCaptor.forClass(SensorEntity.class);
+        Mockito.verify(sensorDao1).save(sensorEntityCaptor.capture());
+        SensorEntity updatedSensorEntity = sensorEntityCaptor.getValue();
+
+        // Assert the sensor's value reflects the updated heater status
+        double expectedSensorValue = 1.0;
+        Assertions.assertThat(updatedSensorEntity.getValue()).isEqualTo(expectedSensorValue);
     }
+
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldCreate() throws Exception {
+        // Setup initial entities
         SensorEntity sensor = createSensorEntity();
         RoomEntity room = createRoomEntity(2L, "Room 2", sensor, 1, 23.0, List.of(), List.of(), new BuildingEntity());
         HeaterEntity heater = createHeaterEntity(1L, "Heater 1", room, sensor);
 
-        HeaterCommand expectedHeater = new HeaterCommand(heater.getName(), heater.getRoom().getId(), heater.getStatus().getId());
-        String json = objectMapper.writeValueAsString(expectedHeater);
+        // Create a new HeaterCommand with a specific status
+        HeaterStatus newStatus = HeaterStatus.ON; // or OFF, as per the requirement
+        HeaterCommand newHeater = new HeaterCommand(heater.getName(), newStatus, heater.getRoom().getId());
+        String json = objectMapper.writeValueAsString(newHeater);
 
-        Mockito.when(heaterDao.existsById(1L)).thenReturn(false);
+        // Mocking the save methods
         Mockito.when(heaterDao.save(Mockito.any(HeaterEntity.class))).thenReturn(heater);
 
+        // Perform the POST request
         mockMvc.perform(
                         MockMvcRequestBuilders
                                 .post("/api/heaters")
@@ -177,11 +197,21 @@ class HeaterControllerTest {
                                 .content(json)
                                 .with(csrf())
                 )
-                // check the HTTP response
+                // Check the HTTP response
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Heater 1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"));
+
+        // Verify that the sensorDao1.save method was called with the new sensor entity
+        ArgumentCaptor<SensorEntity> sensorEntityCaptor = ArgumentCaptor.forClass(SensorEntity.class);
+        Mockito.verify(sensorDao1).save(sensorEntityCaptor.capture());
+        SensorEntity createdSensorEntity = sensorEntityCaptor.getValue();
+
+        // Assert the new sensor's value reflects the specified heater status
+        double expectedSensorValue = 1.0;
+        Assertions.assertThat(createdSensorEntity.getValue()).isEqualTo(expectedSensorValue);
     }
+
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")

@@ -3,7 +3,7 @@ package com.emse.spring.automacorp.model.controllers;
 import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.*;
-import com.emse.spring.automacorp.model.records.RoomCommand;
+import com.emse.spring.automacorp.model.records.dto.RoomCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

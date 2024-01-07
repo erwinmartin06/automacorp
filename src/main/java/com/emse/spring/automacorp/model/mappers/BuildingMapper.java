@@ -1,7 +1,7 @@
 package com.emse.spring.automacorp.model.mappers;
 
 import com.emse.spring.automacorp.model.entities.BuildingEntity;
-import com.emse.spring.automacorp.model.records.Building;
+import com.emse.spring.automacorp.model.records.dao.Building;
 
 import java.util.stream.Collectors;
 

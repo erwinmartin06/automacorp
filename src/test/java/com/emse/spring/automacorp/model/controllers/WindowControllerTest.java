@@ -1,17 +1,19 @@
 package com.emse.spring.automacorp.model.controllers;
 
 import com.emse.spring.automacorp.model.SensorType;
+import com.emse.spring.automacorp.model.WindowStatus;
 import com.emse.spring.automacorp.model.dao.RoomDao;
 import com.emse.spring.automacorp.model.dao.SensorDao1;
 import com.emse.spring.automacorp.model.dao.WindowDao;
 import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.entities.WindowEntity;
-import com.emse.spring.automacorp.model.records.WindowCommand;
+import com.emse.spring.automacorp.model.records.dto.WindowCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -121,7 +123,7 @@ class WindowControllerTest {
         RoomEntity roomEntity = createRoomEntity(1L, "Room 1", sensorEntity, 3);
         WindowEntity windowEntity = createWindowEntity(1L, "Window 1", sensorEntity, roomEntity);
 
-        WindowCommand expectedWindow = new WindowCommand(windowEntity.getName(), windowEntity.getWindowStatus().getId(), windowEntity.getRoom().getId());
+        WindowCommand expectedWindow = new WindowCommand(windowEntity.getName(), WindowStatus.OPENED, windowEntity.getRoom().getId());
         String json = objectMapper.writeValueAsString(expectedWindow);
 
         Mockito.when(windowDao.findById(1L)).thenReturn(Optional.empty());
@@ -142,17 +144,23 @@ class WindowControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldUpdate() throws Exception {
+        // Setup initial entities
         SensorEntity sensorEntity = createSensorEntity(1L, "Sensor 1");
         RoomEntity roomEntity = createRoomEntity(1L, "Room 1", sensorEntity, 3);
         WindowEntity windowEntity = createWindowEntity(1L, "Window 1", sensorEntity, roomEntity);
 
-        WindowCommand expectedWindow = new WindowCommand(windowEntity.getName(), windowEntity.getWindowStatus().getId(), windowEntity.getRoom().getId());
-        String json = objectMapper.writeValueAsString(expectedWindow);
+        // Change the status for the test
+        WindowStatus newStatus = WindowStatus.OPENED; // or CLOSED, opposite of initial status
+        WindowCommand updatedWindow = new WindowCommand(windowEntity.getName(), newStatus, windowEntity.getRoom().getId());
+        String json = objectMapper.writeValueAsString(updatedWindow);
 
+        // Mocking the findById methods
         Mockito.when(windowDao.findById(1L)).thenReturn(Optional.of(windowEntity));
         Mockito.when(sensorDao1.findById(1L)).thenReturn(Optional.of(sensorEntity));
         Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(roomEntity));
+        Mockito.when(windowDao.save(Mockito.any(WindowEntity.class))).thenReturn(windowEntity);
 
+        // Perform the PUT request
         mockMvc.perform(
                         MockMvcRequestBuilders
                                 .put("/api/windows/1")
@@ -160,25 +168,40 @@ class WindowControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .with(csrf())
                 )
-                // check the HTTP response
+                // Check the HTTP response
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Window 1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"));
+
+        // Verify that the sensorDao1.save method was called with the updated sensor entity
+        ArgumentCaptor<SensorEntity> sensorEntityCaptor = ArgumentCaptor.forClass(SensorEntity.class);
+        Mockito.verify(sensorDao1).save(sensorEntityCaptor.capture());
+        SensorEntity updatedSensorEntity = sensorEntityCaptor.getValue();
+
+        // Assert the sensor's value has been updated
+        double expectedSensorValue = 1.0;
+        Assertions.assertThat(updatedSensorEntity.getValue()).isEqualTo(expectedSensorValue);
     }
+
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldCreate() throws Exception {
+        // Setup initial entities
         SensorEntity sensorEntity = createSensorEntity(1L, "Sensor 1");
         RoomEntity roomEntity = createRoomEntity(1L, "Room 1", sensorEntity, 3);
         WindowEntity windowEntity = createWindowEntity(1L, "Window 1", sensorEntity, roomEntity);
 
-        WindowCommand expectedWindow = new WindowCommand(windowEntity.getName(), windowEntity.getWindowStatus().getId(), windowEntity.getRoom().getId());
-        String json = objectMapper.writeValueAsString(expectedWindow);
+        // Create a new WindowCommand with a specific status
+        WindowStatus newStatus = WindowStatus.OPENED; // or CLOSED, as per the requirement
+        WindowCommand newWindow = new WindowCommand(windowEntity.getName(), newStatus, windowEntity.getRoom().getId());
+        String json = objectMapper.writeValueAsString(newWindow);
 
-        Mockito.when(windowDao.existsById(1L)).thenReturn(false);
+        // Mocking the save methods
         Mockito.when(windowDao.save(Mockito.any(WindowEntity.class))).thenReturn(windowEntity);
+        Mockito.when(sensorDao1.save(Mockito.any(SensorEntity.class))).thenReturn(sensorEntity);
 
+        // Perform the POST request
         mockMvc.perform(
                         MockMvcRequestBuilders
                                 .post("/api/windows")
@@ -186,11 +209,21 @@ class WindowControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .with(csrf())
                 )
-                // check the HTTP response
+                // Check the HTTP response
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Window 1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"));
+
+        // Verify that the sensorDao1.save method was called with the correct sensor entity
+        ArgumentCaptor<SensorEntity> sensorEntityCaptor = ArgumentCaptor.forClass(SensorEntity.class);
+        Mockito.verify(sensorDao1).save(sensorEntityCaptor.capture());
+        SensorEntity savedSensorEntity = sensorEntityCaptor.getValue();
+
+        // Assert the sensor's value and other properties
+        double expectedSensorValue = 1.0;
+        Assertions.assertThat(savedSensorEntity.getValue()).isEqualTo(expectedSensorValue);
     }
+
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")

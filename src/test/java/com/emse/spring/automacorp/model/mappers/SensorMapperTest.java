@@ -2,7 +2,7 @@ package com.emse.spring.automacorp.model.mappers;
 
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.SensorType;
-import com.emse.spring.automacorp.model.records.Sensor;
+import com.emse.spring.automacorp.model.records.dao.Sensor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

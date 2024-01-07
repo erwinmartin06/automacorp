@@ -4,7 +4,7 @@ import com.emse.spring.automacorp.model.HeaterStatus;
 import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.entities.HeaterEntity;
 import com.emse.spring.automacorp.model.entities.WindowEntity;
-import com.emse.spring.automacorp.model.records.Heater;
+import com.emse.spring.automacorp.model.records.dao.Heater;
 import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import org.assertj.core.api.Assertions;

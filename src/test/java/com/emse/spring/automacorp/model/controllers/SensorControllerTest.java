@@ -3,7 +3,7 @@ package com.emse.spring.automacorp.model.controllers;
 import com.emse.spring.automacorp.model.dao.SensorDao1;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.SensorType;
-import com.emse.spring.automacorp.model.records.SensorCommand;
+import com.emse.spring.automacorp.model.records.dto.SensorCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;

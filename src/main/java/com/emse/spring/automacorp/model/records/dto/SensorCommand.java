@@ -1,4 +1,4 @@
-package com.emse.spring.automacorp.model.records;
+package com.emse.spring.automacorp.model.records.dto;
 
 import com.emse.spring.automacorp.model.SensorType;
 

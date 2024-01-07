@@ -1,12 +1,15 @@
 package com.emse.spring.automacorp.model.controllers;
 
+import com.emse.spring.automacorp.model.HeaterStatus;
+import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.dao.HeaterDao;
 import com.emse.spring.automacorp.model.dao.RoomDao;
 import com.emse.spring.automacorp.model.dao.SensorDao1;
 import com.emse.spring.automacorp.model.entities.HeaterEntity;
+import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.mappers.HeaterMapper;
-import com.emse.spring.automacorp.model.records.Heater;
-import com.emse.spring.automacorp.model.records.HeaterCommand;
+import com.emse.spring.automacorp.model.records.dao.Heater;
+import com.emse.spring.automacorp.model.records.dto.HeaterCommand;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,8 +60,13 @@ public class HeaterController {
 
     @PostMapping
     public ResponseEntity<Heater> create(@RequestBody HeaterCommand heaterCommand) {
-        HeaterEntity entity = new HeaterEntity(heaterCommand.name(), roomDao.findById(heaterCommand.roomId()).orElse(null), sensorDao1.findById(heaterCommand.statusId()).orElse(null));
+        SensorEntity sensorEntity = new SensorEntity(SensorType.STATUS, "Sensor " + heaterCommand.name());
+        sensorEntity.setValue(heaterCommand.heaterStatus() == HeaterStatus.ON ? 1.0 : 0.0);
+        sensorDao1.save(sensorEntity);
+
+        HeaterEntity entity = new HeaterEntity(heaterCommand.name(), roomDao.findById(heaterCommand.roomId()).orElse(null), sensorEntity);
         HeaterEntity saved = heaterDao.save(entity);
+
         return ResponseEntity.ok(HeaterMapper.of(saved));
     }
 
@@ -69,9 +77,13 @@ public class HeaterController {
             return ResponseEntity.badRequest().build();
         }
 
+        SensorEntity sensorEntity = sensorDao1.findById(entity.getStatus().getId()).orElseThrow();
+        sensorEntity.setValue(heaterCommand.heaterStatus() == HeaterStatus.ON ? 1.0 : 0.0);
+        sensorDao1.save(sensorEntity);
+
         entity.setName(heaterCommand.name());
         entity.setRoom(roomDao.findById(heaterCommand.roomId()).orElse(null));
-        entity.setStatus(sensorDao1.findById(heaterCommand.statusId()).orElse(null));
+        entity.setStatus(sensorEntity);
 
         return ResponseEntity.ok(HeaterMapper.of(heaterDao.save(entity)));
     }

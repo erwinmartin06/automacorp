@@ -3,8 +3,8 @@ package com.emse.spring.automacorp.model.controllers;
 import com.emse.spring.automacorp.model.dao.SensorDao1;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.mappers.SensorMapper;
-import com.emse.spring.automacorp.model.records.Sensor;
-import com.emse.spring.automacorp.model.records.SensorCommand;
+import com.emse.spring.automacorp.model.records.dao.Sensor;
+import com.emse.spring.automacorp.model.records.dto.SensorCommand;
 import jakarta.transaction.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +55,8 @@ public class SensorController {
         entity.setValue(sensor.value());
         entity.setName(sensor.name());
         entity.setSensorType(sensor.sensorType());
+
+        sensorDao.save(entity);
 
         return ResponseEntity.ok(SensorMapper.of(entity));
     }

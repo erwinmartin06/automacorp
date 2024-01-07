@@ -6,8 +6,8 @@ import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.entities.WindowEntity;
-import com.emse.spring.automacorp.model.records.Room;
-import com.emse.spring.automacorp.model.records.Window;
+import com.emse.spring.automacorp.model.records.dao.Room;
+import com.emse.spring.automacorp.model.records.dao.Window;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

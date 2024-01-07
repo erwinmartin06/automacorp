@@ -1,12 +1,15 @@
 package com.emse.spring.automacorp.model.controllers;
 
+import com.emse.spring.automacorp.model.SensorType;
+import com.emse.spring.automacorp.model.WindowStatus;
 import com.emse.spring.automacorp.model.dao.RoomDao;
 import com.emse.spring.automacorp.model.dao.SensorDao1;
 import com.emse.spring.automacorp.model.dao.WindowDao;
+import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.entities.WindowEntity;
 import com.emse.spring.automacorp.model.mappers.WindowMapper;
-import com.emse.spring.automacorp.model.records.Window;
-import com.emse.spring.automacorp.model.records.WindowCommand;
+import com.emse.spring.automacorp.model.records.dao.Window;
+import com.emse.spring.automacorp.model.records.dto.WindowCommand;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,8 +60,13 @@ public class WindowController {
 
     @PostMapping
     public ResponseEntity<Window> create(@RequestBody WindowCommand window) {
-        WindowEntity windowEntity = new WindowEntity(window.name(), sensorDao1.findById(window.sensorId()).orElse(null), roomDao.findById(window.roomId()).orElse(null));
+        SensorEntity sensorEntity = new SensorEntity(SensorType.STATUS, "Sensor " + window.name());
+        sensorEntity.setValue(window.windowStatus() == WindowStatus.OPENED ? 1.0 : 0.0);
+        sensorDao1.save(sensorEntity);
+
+        WindowEntity windowEntity = new WindowEntity(window.name(), sensorEntity, roomDao.findById(window.roomId()).orElse(null));
         WindowEntity saved = windowDao.save(windowEntity);
+
         return ResponseEntity.ok(WindowMapper.of(saved));
     }
 
@@ -68,11 +76,16 @@ public class WindowController {
         if (entity == null) {
             return ResponseEntity.badRequest().build();
         }
+
+        SensorEntity sensorEntity = sensorDao1.findById(entity.getWindowStatus().getId()).orElseThrow();
+        sensorEntity.setValue(window.windowStatus() == WindowStatus.OPENED ? 1.0 : 0.0);
+        sensorDao1.save(sensorEntity);
+
         entity.setName(window.name());
         entity.setRoom(roomDao.findById(window.roomId()).orElse(null));
-        entity.setWindowStatus(sensorDao1.findById(window.sensorId()).orElse(null));
+        entity.setWindowStatus(sensorEntity);
 
-        return ResponseEntity.ok(WindowMapper.of(entity));
+        return ResponseEntity.ok(WindowMapper.of(windowDao.save(entity)));
     }
 
     @PutMapping(path = "/{id}/switch")

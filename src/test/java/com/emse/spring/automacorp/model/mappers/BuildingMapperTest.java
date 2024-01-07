@@ -3,9 +3,9 @@ package com.emse.spring.automacorp.model.mappers;
 import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.WindowStatus;
 import com.emse.spring.automacorp.model.entities.*;
-import com.emse.spring.automacorp.model.records.Building;
-import com.emse.spring.automacorp.model.records.Room;
-import com.emse.spring.automacorp.model.records.Window;
+import com.emse.spring.automacorp.model.records.dao.Building;
+import com.emse.spring.automacorp.model.records.dao.Room;
+import com.emse.spring.automacorp.model.records.dao.Window;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
