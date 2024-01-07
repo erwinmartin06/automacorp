@@ -223,7 +223,17 @@ class HeaterControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldDelete() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/heaters/999").with(csrf()))
+        HeaterEntity heater = new HeaterEntity();
+        heater.setId(1L);
+        SensorEntity status = new SensorEntity();
+        status.setId(1L);
+        heater.setStatus(status);
+
+        Mockito.when(sensorDao1.findById(1L)).thenReturn(Optional.of(status));
+        Mockito.when(heaterDao.findById(1L)).thenReturn(Optional.of(heater));
+        Mockito.when(heaterDao.save(Mockito.any(HeaterEntity.class))).thenReturn(heater);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/heaters/1").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 

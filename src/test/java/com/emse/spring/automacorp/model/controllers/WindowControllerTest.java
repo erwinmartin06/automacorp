@@ -6,10 +6,7 @@ import com.emse.spring.automacorp.model.dao.BuildingDao;
 import com.emse.spring.automacorp.model.dao.RoomDao;
 import com.emse.spring.automacorp.model.dao.SensorDao1;
 import com.emse.spring.automacorp.model.dao.WindowDao;
-import com.emse.spring.automacorp.model.entities.BuildingEntity;
-import com.emse.spring.automacorp.model.entities.RoomEntity;
-import com.emse.spring.automacorp.model.entities.SensorEntity;
-import com.emse.spring.automacorp.model.entities.WindowEntity;
+import com.emse.spring.automacorp.model.entities.*;
 import com.emse.spring.automacorp.model.records.dto.WindowCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -237,7 +234,17 @@ class WindowControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldDelete() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/windows/999").with(csrf()))
+        WindowEntity heater = new WindowEntity();
+        heater.setId(1L);
+        SensorEntity status = new SensorEntity();
+        status.setId(1L);
+        heater.setWindowStatus(status);
+
+        Mockito.when(sensorDao1.findById(1L)).thenReturn(Optional.of(status));
+        Mockito.when(windowDao.findById(1L)).thenReturn(Optional.of(heater));
+        Mockito.when(windowDao.save(Mockito.any(WindowEntity.class))).thenReturn(heater);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/windows/1").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 

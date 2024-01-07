@@ -86,6 +86,7 @@ public class BuildingController {
                 heaterDao.deleteByRoom(room.getId());
                 roomDao.deleteById(room.getId());
             });
+            sensorDao1.deleteById(building.getOutsideTemperature().getId());
             buildingDao.deleteById(id);
         }
     }

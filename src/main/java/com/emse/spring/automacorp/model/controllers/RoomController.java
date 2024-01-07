@@ -102,6 +102,7 @@ public class RoomController {
         if (room != null) {
             windowDao.deleteByRoom(id);
             heaterDao.deleteByRoom(id);
+            sensorDao1.deleteById(room.getCurrentTemp().getId());
             roomDao.deleteById(id);
         }
     }

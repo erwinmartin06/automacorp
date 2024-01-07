@@ -104,6 +104,8 @@ public class HeaterController {
 
     @DeleteMapping(path = "/{id}")
     public void delete(@PathVariable Long id) {
+        HeaterEntity heater = heaterDao.findById(id).orElseThrow();
+        sensorDao1.deleteById(heater.getStatus().getId());
         heaterDao.deleteById(id);
     }
 }
