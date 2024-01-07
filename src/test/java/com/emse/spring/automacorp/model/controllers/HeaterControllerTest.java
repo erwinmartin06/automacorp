@@ -42,6 +42,9 @@ class HeaterControllerTest {
     @MockBean
     private SensorDao1 sensorDao1;
 
+    @MockBean
+    private BuildingDao buildingDao;
+
     HeaterEntity createHeaterEntity(Long id, String name, RoomEntity room, SensorEntity status) {
         HeaterEntity heater = new HeaterEntity(name, room, status);
         heater.setId(id);
@@ -178,15 +181,19 @@ class HeaterControllerTest {
     void shouldCreate() throws Exception {
         // Setup initial entities
         SensorEntity sensor = createSensorEntity();
-        RoomEntity room = createRoomEntity(2L, "Room 2", sensor, 1, 23.0, List.of(), List.of(), new BuildingEntity());
-        HeaterEntity heater = createHeaterEntity(1L, "Heater 1", room, sensor);
+        BuildingEntity buildingEntity = new BuildingEntity("EF", sensor, List.of());
+        buildingEntity.setId(1L);
+        RoomEntity room = createRoomEntity(2L, "Room 2", sensor, 1, 23.0, List.of(), List.of(), buildingEntity);
+        HeaterEntity heater = createHeaterEntity(1L, "Heater 1 Room 2 EF", room, sensor);
 
         // Create a new HeaterCommand with a specific status
-        HeaterStatus newStatus = HeaterStatus.ON; // or OFF, as per the requirement
+        HeaterStatus newStatus = HeaterStatus.ON;
         HeaterCommand newHeater = new HeaterCommand(heater.getName(), newStatus, heater.getRoom().getId());
         String json = objectMapper.writeValueAsString(newHeater);
 
         // Mocking the save methods
+        Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.of(buildingEntity));
+        Mockito.when(roomDao.findById(2L)).thenReturn(Optional.of(room));
         Mockito.when(heaterDao.save(Mockito.any(HeaterEntity.class))).thenReturn(heater);
 
         // Perform the POST request
@@ -199,7 +206,7 @@ class HeaterControllerTest {
                 )
                 // Check the HTTP response
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Heater 1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Heater 1 Room 2 EF"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"));
 
         // Verify that the sensorDao1.save method was called with the new sensor entity

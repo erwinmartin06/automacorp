@@ -64,7 +64,7 @@ public class WindowController {
         sensorEntity.setValue(window.windowStatus() == WindowStatus.OPENED ? 1.0 : 0.0);
         sensorDao1.save(sensorEntity);
 
-        WindowEntity windowEntity = new WindowEntity(window.name(), sensorEntity, roomDao.findById(window.roomId()).orElse(null));
+        WindowEntity windowEntity = new WindowEntity(window.name() + " " + roomDao.findById(window.roomId()).orElseThrow().getName(), sensorEntity, roomDao.findById(window.roomId()).orElse(null));
         WindowEntity saved = windowDao.save(windowEntity);
 
         return ResponseEntity.ok(WindowMapper.of(saved));

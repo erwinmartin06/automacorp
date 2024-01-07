@@ -59,7 +59,7 @@ public class RoomController {
     public ResponseEntity<Room> create(@RequestBody RoomCommand command) {
         RoomEntity roomEntity = new RoomEntity();
 
-        roomEntity.setName(command.name());
+        roomEntity.setName(command.name() + " " + buildingDao.findById(command.buildingId()).orElseThrow().getName());
         roomEntity.setCurrentTemp(sensorDao1.getReferenceById(command.currentTempId()));
         roomEntity.setFloor(command.floor());
         roomEntity.setTargetTemp(command.targetTemp());

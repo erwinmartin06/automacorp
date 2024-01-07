@@ -128,12 +128,16 @@ class RoomControllerTest {
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldCreate() throws Exception {
         SensorEntity sensor = createSensorEntity(1L, "Sensor 1");
-        RoomEntity room = createRoomEntity(1L, "Room 1", sensor, 3, 21.0, List.of(), List.of(), new BuildingEntity());
-        RoomCommand expectedRoom = new RoomCommand(room.getName(), sensor.getId(), room.getTargetTemp(), room.getFloor(), room.getBuilding().getId());
+        BuildingEntity buildingEntity = new BuildingEntity("EF", sensor, List.of());
+        buildingEntity.setId(1L);
+        RoomEntity room = createRoomEntity(1L, "Room 1 EF", sensor, 3, 21.0, List.of(), List.of(), buildingEntity);
+        RoomCommand expectedRoom = new RoomCommand("Room 1 EF", sensor.getId(), room.getTargetTemp(), room.getFloor(), room.getBuilding().getId());
 
         String json = objectMapper.writeValueAsString(expectedRoom);
 
+        Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.of(buildingEntity));
         Mockito.when(sensorDao1.findById(sensor.getId())).thenReturn(Optional.of(sensor));
+        Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(room));
         Mockito.when(roomDao.save(Mockito.any(RoomEntity.class))).thenReturn(room);
 
         mockMvc.perform(
@@ -145,7 +149,7 @@ class RoomControllerTest {
                 )
                 // check the HTTP response
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Room 1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Room 1 EF"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.targetTemp").value("21.0"));
     }

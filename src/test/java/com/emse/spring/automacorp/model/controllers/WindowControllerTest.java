@@ -2,9 +2,11 @@ package com.emse.spring.automacorp.model.controllers;
 
 import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.WindowStatus;
+import com.emse.spring.automacorp.model.dao.BuildingDao;
 import com.emse.spring.automacorp.model.dao.RoomDao;
 import com.emse.spring.automacorp.model.dao.SensorDao1;
 import com.emse.spring.automacorp.model.dao.WindowDao;
+import com.emse.spring.automacorp.model.entities.BuildingEntity;
 import com.emse.spring.automacorp.model.entities.RoomEntity;
 import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.entities.WindowEntity;
@@ -45,6 +47,9 @@ class WindowControllerTest {
 
     @MockBean
     private RoomDao roomDao;
+
+    @MockBean
+    private BuildingDao buildingDao;
 
     SensorEntity createSensorEntity(Long id, String name) {
         SensorEntity sensorEntity = new SensorEntity(SensorType.TEMPERATURE, name);
@@ -189,7 +194,10 @@ class WindowControllerTest {
     void shouldCreate() throws Exception {
         // Setup initial entities
         SensorEntity sensorEntity = createSensorEntity(1L, "Sensor 1");
+        BuildingEntity buildingEntity = new BuildingEntity("EF", sensorEntity, List.of());
+        buildingEntity.setId(1L);
         RoomEntity roomEntity = createRoomEntity(1L, "Room 1", sensorEntity, 3);
+        roomEntity.setBuilding(buildingEntity);
         WindowEntity windowEntity = createWindowEntity(1L, "Window 1", sensorEntity, roomEntity);
 
         // Create a new WindowCommand with a specific status
@@ -198,8 +206,9 @@ class WindowControllerTest {
         String json = objectMapper.writeValueAsString(newWindow);
 
         // Mocking the save methods
+        Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.of(buildingEntity));
+        Mockito.when(roomDao.findById(1L)).thenReturn(Optional.of(roomEntity));
         Mockito.when(windowDao.save(Mockito.any(WindowEntity.class))).thenReturn(windowEntity);
-        Mockito.when(sensorDao1.save(Mockito.any(SensorEntity.class))).thenReturn(sensorEntity);
 
         // Perform the POST request
         mockMvc.perform(
