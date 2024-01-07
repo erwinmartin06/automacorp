@@ -1,7 +1,9 @@
 package com.emse.spring.automacorp.model.controllers;
 
+import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.RoomEntity;
+import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.mappers.RoomMapper;
 import com.emse.spring.automacorp.model.records.dao.Room;
 import com.emse.spring.automacorp.model.records.dto.RoomCommand;
@@ -59,8 +61,12 @@ public class RoomController {
     public ResponseEntity<Room> create(@RequestBody RoomCommand command) {
         RoomEntity roomEntity = new RoomEntity();
 
-        roomEntity.setName(command.name() + " " + buildingDao.findById(command.buildingId()).orElseThrow().getName());
-        roomEntity.setCurrentTemp(sensorDao1.getReferenceById(command.currentTempId()));
+        SensorEntity sensorEntity = new SensorEntity(SensorType.TEMPERATURE, "Temperature " + command.name());
+        sensorEntity.setValue(command.currentTemp());
+        sensorDao1.save(sensorEntity);
+
+        roomEntity.setName(command.name());
+        roomEntity.setCurrentTemp(sensorEntity);
         roomEntity.setFloor(command.floor());
         roomEntity.setTargetTemp(command.targetTemp());
         roomEntity.setBuilding(buildingDao.findById(command.buildingId()).orElse(null));
@@ -76,8 +82,12 @@ public class RoomController {
             return ResponseEntity.badRequest().build();
         }
 
+        SensorEntity sensorEntity = sensorDao1.findById(room.getCurrentTemp().getId()).orElseThrow();
+        sensorEntity.setValue(command.currentTemp());
+        sensorDao1.save(sensorEntity);
+
         room.setName(command.name());
-        room.setCurrentTemp(sensorDao1.findById(command.currentTempId()).orElse(null));
+        room.setCurrentTemp(sensorEntity);
         room.setFloor(command.floor());
         room.setTargetTemp(command.targetTemp());
         room.setBuilding(buildingDao.findById(command.buildingId()).orElse(null));

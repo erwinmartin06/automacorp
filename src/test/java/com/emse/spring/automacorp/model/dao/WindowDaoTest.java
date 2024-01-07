@@ -22,7 +22,7 @@ class WindowDaoTest {
     @Test
     public void shouldFindAWindowById() {
         WindowEntity window = windowDao.getReferenceById(-10L);
-        Assertions.assertThat(window.getName()).isEqualTo("Window 1");
+        Assertions.assertThat(window.getName()).isEqualTo("Window 1 Room 1 Mines");
         Assertions.assertThat(window.getWindowStatus().getValue()).isEqualTo(1.0);
     }
 
@@ -30,9 +30,12 @@ class WindowDaoTest {
     public void shouldFindRoomsWithOpenWindows() {
         List<WindowEntity> result = windowDao.findRoomsWithOpenWindows(-10L);
         Assertions.assertThat(result)
-                .hasSize(1)
+                .hasSize(2)
                 .extracting("id", "name")
-                .containsExactly(Tuple.tuple(-10L, "Window 1"));
+                .containsExactly(
+                        Tuple.tuple(-10L, "Window 1 Room 1 Mines"),
+                        Tuple.tuple(-12L, "Window 3 Room 1 Mines")
+                );
     }
 
     @Test
@@ -43,13 +46,14 @@ class WindowDaoTest {
 
     @Test
     public void shouldFindWindowsByRoomName() {
-        List<WindowEntity> result = windowDao.findAllWindowsByRoomName("Room1");
+        List<WindowEntity> result = windowDao.findAllWindowsByRoomName("Room 1 Mines");
         Assertions.assertThat(result)
-                .hasSize(2)
+                .hasSize(3)
                 .extracting("id", "name")
                 .containsExactly(
-                        Tuple.tuple(-10L, "Window 1"),
-                        Tuple.tuple(-9L, "Window 2")
+                        Tuple.tuple(-10L, "Window 1 Room 1 Mines"),
+                        Tuple.tuple(-11L, "Window 2 Room 1 Mines"),
+                        Tuple.tuple(-12L, "Window 3 Room 1 Mines")
                 );
     }
 
@@ -57,7 +61,7 @@ class WindowDaoTest {
     public void shouldDeleteWindowsRoom() {
         RoomEntity room = roomDao.getReferenceById(-10L);
         List<Long> roomIds = room.getWindows().stream().map(WindowEntity::getId).collect(Collectors.toList());
-        Assertions.assertThat(roomIds).hasSize(2);
+        Assertions.assertThat(roomIds).hasSize(3);
 
         windowDao.deleteByRoom(-10L);
         List<WindowEntity> result = windowDao.findAllById(roomIds);

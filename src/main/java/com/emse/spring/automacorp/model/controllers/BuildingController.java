@@ -1,7 +1,9 @@
 package com.emse.spring.automacorp.model.controllers;
 
+import com.emse.spring.automacorp.model.SensorType;
 import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.BuildingEntity;
+import com.emse.spring.automacorp.model.entities.SensorEntity;
 import com.emse.spring.automacorp.model.mappers.BuildingMapper;
 import com.emse.spring.automacorp.model.records.dao.Building;
 import com.emse.spring.automacorp.model.records.dto.BuildingCommand;
@@ -48,7 +50,11 @@ public class BuildingController {
 
     @PostMapping
     public ResponseEntity<Building> create(@RequestBody BuildingCommand command) {
-        BuildingEntity entity = new BuildingEntity(command.name(), sensorDao1.findById(command.outsideTemperatureId()).orElse(null), List.of());
+        SensorEntity sensorEntity = new SensorEntity(SensorType.TEMPERATURE, "Outside temperature " + command.name());
+        sensorEntity.setValue(command.outsideTemperature());
+        sensorDao1.save(sensorEntity);
+
+        BuildingEntity entity = new BuildingEntity(command.name(), sensorEntity, List.of());
 
         BuildingEntity saved = buildingDao.save(entity);
         return ResponseEntity.ok(BuildingMapper.of(saved));
@@ -61,8 +67,12 @@ public class BuildingController {
             return ResponseEntity.badRequest().build();
         }
 
+        SensorEntity sensorEntity = sensorDao1.findById(entity.getOutsideTemperature().getId()).orElseThrow();
+        sensorEntity.setValue(command.outsideTemperature());
+        sensorDao1.save(sensorEntity);
+
         entity.setName(command.name());
-        entity.setOutsideTemperature(sensorDao1.findById(command.outsideTemperatureId()).orElse(null));
+        entity.setOutsideTemperature(sensorEntity);
 
         return ResponseEntity.ok(BuildingMapper.of(buildingDao.save(entity)));
     }

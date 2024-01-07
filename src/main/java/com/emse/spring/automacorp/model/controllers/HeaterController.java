@@ -60,11 +60,11 @@ public class HeaterController {
 
     @PostMapping
     public ResponseEntity<Heater> create(@RequestBody HeaterCommand heaterCommand) {
-        SensorEntity sensorEntity = new SensorEntity(SensorType.STATUS, "Sensor " + heaterCommand.name());
+        SensorEntity sensorEntity = new SensorEntity(SensorType.STATUS, "Status " + heaterCommand.name());
         sensorEntity.setValue(heaterCommand.heaterStatus() == HeaterStatus.ON ? 1.0 : 0.0);
         sensorDao1.save(sensorEntity);
 
-        HeaterEntity entity = new HeaterEntity(heaterCommand.name() + " " + roomDao.findById(heaterCommand.roomId()).orElseThrow().getName(), roomDao.findById(heaterCommand.roomId()).orElse(null), sensorEntity);
+        HeaterEntity entity = new HeaterEntity(heaterCommand.name(), roomDao.findById(heaterCommand.roomId()).orElse(null), sensorEntity);
         HeaterEntity saved = heaterDao.save(entity);
 
         return ResponseEntity.ok(HeaterMapper.of(saved));

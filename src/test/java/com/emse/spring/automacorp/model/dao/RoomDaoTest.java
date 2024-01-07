@@ -17,7 +17,7 @@ class RoomDaoTest {
     @Test
     public void shouldFindARoomById() {
         RoomEntity room = roomDao.getReferenceById(-10L);
-        Assertions.assertThat(room.getName()).isEqualTo("Room1");
+        Assertions.assertThat(room.getName()).isEqualTo("Room 1 Mines");
         Assertions.assertThat(room.getFloor()).isEqualTo(1);
         Assertions.assertThat(room.getCurrentTemp().getId()).isEqualTo(-10);
     }
@@ -26,11 +26,12 @@ class RoomDaoTest {
     public void shouldFindRoomsByBuildingName() {
         List<RoomEntity> result = roomDao.findAllRoomsByBuildingName("Mines");
         Assertions.assertThat(result)
-                .hasSize(2)
+                .hasSize(3)
                 .extracting("id", "name")
                 .containsExactly(
-                        Tuple.tuple(-10L, "Room1"),
-                        Tuple.tuple(-9L, "Room2")
+                        Tuple.tuple(-10L, "Room 1 Mines"),
+                        Tuple.tuple(-9L, "Room 2 Mines"),
+                        Tuple.tuple(-8L, "Room 3 Mines")
                 );
     }
 }

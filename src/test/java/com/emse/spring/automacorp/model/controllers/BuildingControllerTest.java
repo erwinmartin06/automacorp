@@ -5,8 +5,10 @@ import com.emse.spring.automacorp.model.dao.*;
 import com.emse.spring.automacorp.model.entities.*;
 import com.emse.spring.automacorp.model.records.dto.BuildingCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -102,7 +104,7 @@ class BuildingControllerTest {
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldNotUpdateUnknownEntity() throws Exception {
         BuildingEntity buildingEntity = createBuildingEntity(1L, "Building 1", new SensorEntity());
-        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId());
+        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getValue());
         String json = objectMapper.writeValueAsString(expectedBuilding);
 
         Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.empty());
@@ -119,42 +121,20 @@ class BuildingControllerTest {
 
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
-    void shouldUpdate() throws Exception {
-        SensorEntity sensorEntity = createSensorEntity();
-        BuildingEntity buildingEntity = createBuildingEntity(1L, "Building 1", sensorEntity);
-
-        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId());
-        String json = objectMapper.writeValueAsString(expectedBuilding);
-
-        Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.of(buildingEntity));
-        Mockito.when(sensorDao1.findById(1L)).thenReturn(Optional.of(sensorEntity));
-        Mockito.when(buildingDao.save(Mockito.any(BuildingEntity.class))).thenReturn(buildingEntity);
-
-        mockMvc.perform(
-                        MockMvcRequestBuilders
-                                .put("/api/buildings/1")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(json)
-                                .with(csrf())
-                )
-                // check the HTTP response
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Building 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"));
-    }
-
-    @Test
-    @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldCreate() throws Exception {
-        SensorEntity sensorEntity = createSensorEntity();
-        BuildingEntity buildingEntity = createBuildingEntity(1L, "Building 1", sensorEntity);
+        // Setup initial entities
+        SensorEntity sensorEntity = new SensorEntity(SensorType.TEMPERATURE, "Outside temperature Building 1");
+        BuildingEntity buildingEntity = new BuildingEntity("Building 1", sensorEntity, List.of());
 
-        BuildingCommand expectedBuilding = new BuildingCommand(buildingEntity.getName(), buildingEntity.getOutsideTemperature().getId());
+        Double outsideTemperature = 15.0;
+        BuildingCommand expectedBuilding = new BuildingCommand("Building 1", outsideTemperature);
         String json = objectMapper.writeValueAsString(expectedBuilding);
 
-        Mockito.when(buildingDao.existsById(1L)).thenReturn(false);
+        // Mocking the save methods
+        Mockito.when(sensorDao1.save(Mockito.any(SensorEntity.class))).thenReturn(sensorEntity);
         Mockito.when(buildingDao.save(Mockito.any(BuildingEntity.class))).thenReturn(buildingEntity);
 
+        // Perform the POST request
         mockMvc.perform(
                         MockMvcRequestBuilders
                                 .post("/api/buildings")
@@ -162,10 +142,54 @@ class BuildingControllerTest {
                                 .content(json)
                                 .with(csrf())
                 )
-                // check the HTTP response
+                // Check the HTTP response
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Building 1"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value("1"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Building 1"));
+
+        // Verify that the sensorDao1.save method was called with the new sensor entity
+        ArgumentCaptor<SensorEntity> sensorEntityCaptor = ArgumentCaptor.forClass(SensorEntity.class);
+        Mockito.verify(sensorDao1).save(sensorEntityCaptor.capture());
+        SensorEntity createdSensorEntity = sensorEntityCaptor.getValue();
+
+        // Assert the new sensor's value reflects the specified outside temperature
+        Assertions.assertThat(createdSensorEntity.getValue()).isEqualTo(outsideTemperature);
+    }
+
+    @Test
+    @WithMockUser(username = "Erwin", roles = "ADMIN")
+    void shouldUpdate() throws Exception {
+        // Setup initial entities
+        SensorEntity sensorEntity = createSensorEntity();
+        BuildingEntity buildingEntity = createBuildingEntity(1L, "Building 1", sensorEntity);
+
+        Double newOutsideTemperature = 18.0;
+        BuildingCommand updatedBuilding = new BuildingCommand("Building 1 Updated", newOutsideTemperature);
+        String json = objectMapper.writeValueAsString(updatedBuilding);
+
+        // Mocking the findById and save methods
+        Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.of(buildingEntity));
+        Mockito.when(sensorDao1.findById(sensorEntity.getId())).thenReturn(Optional.of(sensorEntity));
+        Mockito.when(buildingDao.save(Mockito.any(BuildingEntity.class))).thenReturn(buildingEntity);
+
+        // Perform the PUT request
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .put("/api/buildings/1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json)
+                                .with(csrf())
+                )
+                // Check the HTTP response
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Building 1 Updated"));
+
+        // Verify that the sensorDao1.save method was called with the updated sensor entity
+        ArgumentCaptor<SensorEntity> sensorEntityCaptor = ArgumentCaptor.forClass(SensorEntity.class);
+        Mockito.verify(sensorDao1).save(sensorEntityCaptor.capture());
+        SensorEntity updatedSensorEntity = sensorEntityCaptor.getValue();
+
+        // Assert the sensor's value reflects the updated building's outside temperature
+        Assertions.assertThat(updatedSensorEntity.getValue()).isEqualTo(newOutsideTemperature);
     }
 
     @Test

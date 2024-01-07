@@ -22,7 +22,7 @@ class BuildingDaoTest {
     public void shouldFindABuildingById() {
         BuildingEntity building = buildingDao.getReferenceById(-10L);
         Assertions.assertThat(building.getName()).isEqualTo("Mines");
-        Assertions.assertThat(building.getOutsideTemperature().getId()).isEqualTo(-4);
+        Assertions.assertThat(building.getOutsideTemperature().getId()).isEqualTo(-7);
         List<RoomEntity> rooms = Arrays.asList(roomDao.getReferenceById(-10L), roomDao.getReferenceById(-9L));
         Assertions.assertThat(building.getRooms().containsAll(rooms)).isTrue();
     }

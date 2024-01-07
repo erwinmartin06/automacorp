@@ -22,19 +22,21 @@ class HeaterDaoTest {
     @Test
     public void shouldFindAHeaterById() {
         HeaterEntity heater = heaterDao.getReferenceById(-10L);
-        Assertions.assertThat(heater.getName()).isEqualTo("Heater 1");
+        Assertions.assertThat(heater.getName()).isEqualTo("Heater 1 Room 1 Mines");
         Assertions.assertThat(heater.getRoom().getId()).isEqualTo(-10);
-        Assertions.assertThat(heater.getStatus().getId()).isEqualTo(-6);
+        Assertions.assertThat(heater.getStatus().getId()).isEqualTo(-104);
     }
 
     @Test
     public void shouldFindHeatersByRoomName() {
-        List<HeaterEntity> result = heaterDao.findAllHeatersByRoomName("Room1");
+        List<HeaterEntity> result = heaterDao.findAllHeatersByRoomName("Room 1 Mines");
         Assertions.assertThat(result)
-                .hasSize(1)
+                .hasSize(3)
                 .extracting("id", "name")
                 .containsExactly(
-                        Tuple.tuple(-10L, "Heater 1")
+                        Tuple.tuple(-10L, "Heater 1 Room 1 Mines"),
+                        Tuple.tuple(-11L, "Heater 2 Room 1 Mines"),
+                        Tuple.tuple(-12L, "Heater 3 Room 1 Mines")
                 );
     }
 
@@ -42,7 +44,7 @@ class HeaterDaoTest {
     public void shouldDeleteHeatersRoom() {
         RoomEntity room = roomDao.getReferenceById(-10L);
         List<Long> roomIds = room.getHeaters().stream().map(HeaterEntity::getId).collect(Collectors.toList());
-        Assertions.assertThat(roomIds).hasSize(1);
+        Assertions.assertThat(roomIds).hasSize(3);
 
         heaterDao.deleteByRoom(-10L);
         List<HeaterEntity> result = heaterDao.findAllById(roomIds);
