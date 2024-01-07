@@ -30,9 +30,21 @@ public class WindowDaoCustomImpl implements WindowDaoCustom {
     }
 
     @Override
+    @Transactional
     public void deleteByRoom(Long id) {
-        String jpql = "delete from WindowEntity w where w.room.id = :id";
-        em.createQuery(jpql)
+        String sensorJpql = "select w.windowStatus from WindowEntity w where w.room.id = :id";
+        List<SensorEntity> sensors = em.createQuery(sensorJpql, SensorEntity.class)
+                .setParameter("id", id)
+                .getResultList();
+
+        // Delete the SensorEntity objects
+        for (SensorEntity sensor : sensors) {
+            em.remove(em.contains(sensor) ? sensor : em.merge(sensor));
+        }
+
+        // Then, delete the WindowEntity objects
+        String windowJpql = "delete from WindowEntity w where w.room.id = :id";
+        em.createQuery(windowJpql)
                 .setParameter("id", id)
                 .executeUpdate();
     }

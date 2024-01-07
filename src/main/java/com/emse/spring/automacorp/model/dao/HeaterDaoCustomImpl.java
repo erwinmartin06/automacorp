@@ -21,9 +21,21 @@ public class HeaterDaoCustomImpl implements HeaterDaoCustom{
     }
 
     @Override
+    @Transactional
     public void deleteByRoom(Long id) {
-        String jpql = "delete from HeaterEntity w where w.room.id = :id";
-        em.createQuery(jpql)
+        String sensorJpql = "select h.status from HeaterEntity h where h.room.id = :id";
+        List<SensorEntity> sensors = em.createQuery(sensorJpql, SensorEntity.class)
+                .setParameter("id", id)
+                .getResultList();
+
+        // Delete the SensorEntity objects
+        for (SensorEntity sensor : sensors) {
+            em.remove(em.contains(sensor) ? sensor : em.merge(sensor));
+        }
+
+        // Then, delete the HeaterEntity objects
+        String heaterJpql = "delete from HeaterEntity h where h.room.id = :id";
+        em.createQuery(heaterJpql)
                 .setParameter("id", id)
                 .executeUpdate();
     }

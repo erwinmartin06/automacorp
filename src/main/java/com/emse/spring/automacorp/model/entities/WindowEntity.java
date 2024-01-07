@@ -12,7 +12,7 @@ public class WindowEntity {
     @Column(nullable = false, length=255)
     private String name;
 
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)
     private SensorEntity windowStatus;
 
     @ManyToOne

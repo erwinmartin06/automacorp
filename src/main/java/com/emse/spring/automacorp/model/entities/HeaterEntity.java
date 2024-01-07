@@ -14,7 +14,7 @@ public class HeaterEntity {
     @ManyToOne(optional = false)
     private RoomEntity room;
 
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)
     private SensorEntity status;
 
     public HeaterEntity() {

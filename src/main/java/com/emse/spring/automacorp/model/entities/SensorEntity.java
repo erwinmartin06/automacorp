@@ -19,6 +19,18 @@ public class SensorEntity {
     @Enumerated(EnumType.STRING)
     private SensorType sensorType;
 
+    @OneToOne(mappedBy = "currentTemp")
+    private RoomEntity room;
+
+    @OneToOne(mappedBy = "outsideTemperature")
+    private BuildingEntity building;
+
+    @OneToOne(mappedBy = "status")
+    private HeaterEntity heater;
+
+    @OneToOne(mappedBy = "windowStatus")
+    private WindowEntity window;
+
     public SensorEntity() {
     }
 
@@ -57,5 +69,37 @@ public class SensorEntity {
 
     public void setSensorType(SensorType sensorType) {
         this.sensorType = sensorType;
+    }
+
+    public RoomEntity getRoom() {
+        return room;
+    }
+
+    public void setRoom(RoomEntity room) {
+        this.room = room;
+    }
+
+    public BuildingEntity getBuilding() {
+        return building;
+    }
+
+    public void setBuilding(BuildingEntity building) {
+        this.building = building;
+    }
+
+    public HeaterEntity getHeater() {
+        return heater;
+    }
+
+    public void setHeater(HeaterEntity heater) {
+        this.heater = heater;
+    }
+
+    public WindowEntity getWindow() {
+        return window;
+    }
+
+    public void setWindow(WindowEntity window) {
+        this.window = window;
     }
 }

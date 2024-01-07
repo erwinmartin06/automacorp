@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @CrossOrigin
 @RestController
@@ -40,7 +41,7 @@ public class BuildingController {
                 .stream()
                 .map(BuildingMapper::of)
                 .sorted(Comparator.comparing(Building::name))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     @GetMapping(path = "/{id}")
@@ -79,16 +80,23 @@ public class BuildingController {
 
     @DeleteMapping(path = "/{id}")
     public void delete(@PathVariable Long id) {
-        BuildingEntity building = buildingDao.findById(id).orElse(null);
-        if (building != null) {
-            building.getRooms().forEach(room -> {
-                windowDao.deleteByRoom(room.getId());
-                heaterDao.deleteByRoom(room.getId());
-                roomDao.deleteById(room.getId());
-            });
-            sensorDao1.deleteById(building.getOutsideTemperature().getId());
-            buildingDao.deleteById(id);
-        }
+        BuildingEntity building = buildingDao.findById(id).orElseThrow();
+
+        List<Long> currentTempIds = roomDao.findAllRoomsByBuildingName(building.getName())
+                .stream()
+                .map(roomEntity -> roomEntity.getCurrentTemp().getId())
+                .toList();
+
+        building.getRooms().forEach(room -> {
+            windowDao.deleteByRoom(room.getId());
+            heaterDao.deleteByRoom(room.getId());
+            roomDao.deleteById(room.getId());
+        });
+
+        currentTempIds.forEach(sensorDao1::deleteById);
+
+        buildingDao.deleteById(id);
+        sensorDao1.deleteById(building.getOutsideTemperature().getId());
     }
 }
 

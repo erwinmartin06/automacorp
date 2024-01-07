@@ -195,8 +195,8 @@ class BuildingControllerTest {
     @Test
     @WithMockUser(username = "Erwin", roles = "ADMIN")
     void shouldDeleteBuildingAndAssociatedEntities() throws Exception {
-        Long buildingId = 1L;
         SensorEntity sensor = createSensorEntity();
+        sensor.setId(1L);
 
         RoomEntity room1 = new RoomEntity();
         RoomEntity room2 = new RoomEntity();
@@ -218,24 +218,23 @@ class BuildingControllerTest {
         room2.setWindows(List.of(window2));
         room2.setHeaters(List.of(heater2));
 
-        BuildingEntity building = createBuildingEntity(buildingId, "Building 1", sensor);
+        BuildingEntity building = createBuildingEntity(1L, "Building 1", sensor);
         building.setRooms(List.of(room1, room2));
 
-        Mockito.when(buildingDao.findById(buildingId)).thenReturn(Optional.of(building));
-        Mockito.doNothing().when(roomDao).deleteById(Mockito.any());
+        Mockito.when(buildingDao.findById(1L)).thenReturn(Optional.of(building));
+        Mockito.doNothing().when(sensorDao1).deleteById(Mockito.any());
         Mockito.doNothing().when(windowDao).deleteById(Mockito.any());
         Mockito.doNothing().when(heaterDao).deleteById(Mockito.any());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/buildings/" + buildingId).with(csrf()))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/buildings/1").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
         Mockito.verify(windowDao).deleteByRoom(1L);
         Mockito.verify(windowDao).deleteByRoom(2L);
         Mockito.verify(heaterDao).deleteByRoom(1L);
         Mockito.verify(heaterDao).deleteByRoom(2L);
+        Mockito.verify(buildingDao).deleteById(1L);
         Mockito.verify(roomDao).deleteById(1L);
         Mockito.verify(roomDao).deleteById(2L);
-        Mockito.verify(buildingDao).deleteById(buildingId);
     }
-
 }

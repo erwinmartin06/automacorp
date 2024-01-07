@@ -66,7 +66,6 @@ class WindowDaoTest {
         windowDao.deleteByRoom(-10L);
         List<WindowEntity> result = windowDao.findAllById(roomIds);
         Assertions.assertThat(result).isEmpty();
-
     }
 
     @Test

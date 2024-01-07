@@ -14,7 +14,7 @@ public class RoomEntity {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)
     private SensorEntity currentTemp;
 
     @Column(nullable = false)
