@@ -1,6 +1,6 @@
 # Automacorp Backend - Erwin MARTIN & Céline NI
 
-This Git repository contains the Automacorp backend developped for a programming course.
+This Git repository contains the Automacorp Backend developped for a programming course.
 The goal was to implement the backend of an application managing buildings, rooms, windows, heaters and temperature sensors.
 All of this can, for example, serve as a simulation to understand how to efficiently use energy during winters.
 
