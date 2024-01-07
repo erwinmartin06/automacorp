@@ -11,11 +11,11 @@ INSERT INTO SP_BUILDING(id, name, outside_temperature_id) VALUES(-10, 'Mines', -
 INSERT INTO SP_BUILDING(id, name, outside_temperature_id) VALUES(-9, 'EF', -6);
 
 INSERT INTO SP_ROOM(id, name, floor, current_temp_id, building_id) VALUES(-10, 'Room 1 Mines', 1, -10, -10);
-INSERT INTO SP_ROOM(id, name, floor, current_temp_id, building_id) VALUES(-9, 'Room 2 Mines', 2, -9, -10);
-INSERT INTO SP_ROOM(id, name, floor, current_temp_id, building_id) VALUES(-8, 'Room 3 Mines', 2, -8, -10);
-INSERT INTO SP_ROOM(id, name, floor, current_temp_id, building_id) VALUES(-7, 'Room 1 EF', 1, -10, -9);
-INSERT INTO SP_ROOM(id, name, floor, current_temp_id, building_id) VALUES(-6, 'Room 2 EF', 2, -9, -9);
-INSERT INTO SP_ROOM(id, name, floor, current_temp_id, building_id) VALUES(-5, 'Room 3 EF', 3, -8, -9);
+INSERT INTO SP_ROOM(id, name, floor, current_temp_id, target_temp, building_id) VALUES(-9, 'Room 2 Mines', 2, -9, 21.0, -10);
+INSERT INTO SP_ROOM(id, name, floor, current_temp_id, target_temp, building_id) VALUES(-8, 'Room 3 Mines', 2, -8, 20.5, -10);
+INSERT INTO SP_ROOM(id, name, floor, current_temp_id, target_temp, building_id) VALUES(-7, 'Room 1 EF', 1, -10, 22.0, -9);
+INSERT INTO SP_ROOM(id, name, floor, current_temp_id, target_temp, building_id) VALUES(-6, 'Room 2 EF', 2, -9, 20.0, -9);
+INSERT INTO SP_ROOM(id, name, floor, current_temp_id, target_temp, building_id) VALUES(-5, 'Room 3 EF', 3, -8, 19.0, -9);
 
 INSERT INTO SP_SENSOR(id, name, sensor_value, sensor_type) VALUES(-101, 'Status Window 1 Room 1 Mines', 1.0, 'STATUS');
 INSERT INTO SP_SENSOR(id, name, sensor_value, sensor_type) VALUES(-102, 'Status Window 2 Room 1 Mines', 0.0, 'STATUS');
